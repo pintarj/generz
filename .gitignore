@@ -59,3 +59,10 @@ typings/
 
 # next.js build output
 .next
+node_module
+
+# output folder
+/lib
+
+# npm's package lock
+package-lock.json

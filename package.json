@@ -1,0 +1,46 @@
+{
+  "name": "generz",
+  "version": "0.0.0",
+  "description": "CLI program that generates code parts for compilers",
+  "main": "lib/main.js",
+  "files": [
+    "lib/**/*"
+  ],
+  "bin": {
+    "generz": "lib/main.js"
+  },
+  "scripts": {
+    "start": "ts-node src/main.ts",
+    "build": "tsc",
+    "test": "jest --config jestconfig.json",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test",
+    "postversion": "git push && git push --tags"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pintarj/generz.git"
+  },
+  "keywords": [
+    "compilers",
+    "code",
+    "generation"
+  ],
+  "author": "Janez Pintar",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pintarj/generz/issues"
+  },
+  "homepage": "https://github.com/pintarj/generz#readme",
+  "devDependencies": {
+    "@types/jest": "^24.0.11",
+    "@types/node": "^11.11.4",
+    "jest": "^24.5.0",
+    "ts-jest": "^24.0.0",
+    "ts-node": "^8.0.3",
+    "typescript": "^3.3.4000"
+  },
+  "dependencies": {
+    "yargs": "^13.2.2"
+  }
+}
