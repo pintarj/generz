@@ -1,8 +1,13 @@
 #!/usr/bin/env node
 
+import Args from './args';
+import Pipeline from './pipeline';
 import {ArgsGenerzError, CodeGenerzError, InternalGenerzError} from './error';
 
 try {
+    const args     = Args.parse();
+    const pipeline = new Pipeline(args);
+    pipeline.run();
 } catch (error) {
     if (error instanceof ArgsGenerzError) {
         console.log(error.message);
@@ -14,7 +19,7 @@ try {
         console.error(error.message);
         process.exit(3);
     } else {
-        console.error(error.toString ? error.toString() : error);
+        console.error(`UNHANDLED ERROR: ${error.toString ? error.toString() : error}`);
         process.exit(4);
     }
 }
