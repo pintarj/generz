@@ -66,3 +66,6 @@ node_module
 
 # npm's package lock
 package-lock.json
+
+# VSCode project folder
+.vscode/
