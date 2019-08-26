@@ -1,3 +1,6 @@
+# IDEA's project folder
+.idea/
+
 # Logs
 logs
 *.log
