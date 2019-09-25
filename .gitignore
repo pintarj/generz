@@ -72,3 +72,6 @@ package-lock.json
 
 # VSCode project folder
 .vscode/
+
+# Mac stuff
+.DS_Store
