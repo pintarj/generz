@@ -75,3 +75,9 @@ package-lock.json
 
 # Mac stuff
 .DS_Store
+
+# Just some folders to ignore
+.ignore/
+.ignored/
+ignore/
+ignored/
