@@ -38,4 +38,24 @@ export class State {
 
         return states;
     }
+
+    public get_transitively_reachable_states(): State[] {
+        const processed_states = new Map<number, State>();
+        const queue: State[] = [this];
+
+        while (true) {
+            const state = queue.shift();
+
+            if (state === undefined)
+                break;
+
+            if (processed_states.has(state.id))
+                continue;
+
+            processed_states.set(state.id, state);
+            queue.push(...state.transitions.map(transition => transition.state));
+        }
+
+        return Array.from(processed_states.values());
+    }
 }

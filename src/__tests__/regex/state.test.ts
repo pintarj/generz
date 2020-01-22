@@ -55,3 +55,76 @@ test('state-non-deterministic-reach', () => {
     expect(reachable[1].state.id).toBe(4);
     expect(reachable[2].state.id).toBe(2);
 });
+
+test('state-transitive-reachable-states-simple', () => {
+    const symbol_1 = new Symbol(16);
+    const symbol_2 = new Symbol(32);
+    const state_0 = new State(0);
+    const state_1 = new State(1);
+    const state_2 = new State(2);
+    state_0.add_transition(symbol_1, state_1);
+    state_0.add_transition(symbol_2, state_2);
+    const reachable = state_0.get_transitively_reachable_states().sort((a, b) => a.id - b.id);
+    expect(reachable.length).toBe(3);
+    expect(reachable[0].id).toBe(0);
+    expect(reachable[1].id).toBe(1);
+    expect(reachable[2].id).toBe(2);
+});
+
+test('state-transitive-reachable-states-simple-epsilon', () => {
+    const state_0 = new State(0);
+    const state_1 = new State(1);
+    const state_2 = new State(2);
+    state_0.add_epsilon_transition(state_1);
+    state_0.add_epsilon_transition(state_2);
+    const reachable = state_0.get_transitively_reachable_states().sort((a, b) => a.id - b.id);
+    expect(reachable.length).toBe(3);
+    expect(reachable[0].id).toBe(0);
+    expect(reachable[1].id).toBe(1);
+    expect(reachable[2].id).toBe(2);
+});
+
+test('state-transitive-reachable-states-complex', () => {
+    const state_0 = new State(0);
+    const state_1 = new State(1);
+    const state_2 = new State(2);
+    const state_3 = new State(3);
+    const state_4 = new State(4);
+    const state_5 = new State(5);
+    const state_6 = new State(6);
+    state_0.add_epsilon_transition(state_1);
+    state_0.add_epsilon_transition(state_2);
+    state_0.add_epsilon_transition(state_3);
+    state_1.add_epsilon_transition(state_2);
+    state_2.add_epsilon_transition(state_4);
+    state_2.add_epsilon_transition(state_5);
+    state_5.add_epsilon_transition(state_6);
+    const reachable = state_0.get_transitively_reachable_states().sort((a, b) => a.id - b.id);
+    expect(reachable.length).toBe(7);
+    expect(reachable[0].id).toBe(0);
+    expect(reachable[1].id).toBe(1);
+    expect(reachable[2].id).toBe(2);
+    expect(reachable[3].id).toBe(3);
+    expect(reachable[4].id).toBe(4);
+    expect(reachable[5].id).toBe(5);
+    expect(reachable[6].id).toBe(6);
+});
+
+test('state-transitive-reachable-states-loop', () => {
+    const state_0 = new State(0);
+    const state_1 = new State(1);
+    const state_2 = new State(2);
+    state_0.add_epsilon_transition(state_1);
+    state_1.add_epsilon_transition(state_2);
+    state_2.add_epsilon_transition(state_0);
+    const reachable_0 = state_0.get_transitively_reachable_states().sort((a, b) => a.id - b.id);
+    expect(reachable_0.length).toBe(3);
+    expect(reachable_0[0].id).toBe(0);
+    expect(reachable_0[1].id).toBe(1);
+    expect(reachable_0[2].id).toBe(2);
+    const reachable_1 = state_1.get_transitively_reachable_states().sort((a, b) => a.id - b.id);
+    expect(reachable_1.length).toBe(3);
+    expect(reachable_1[0].id).toBe(0);
+    expect(reachable_1[1].id).toBe(1);
+    expect(reachable_1[2].id).toBe(2);
+});
