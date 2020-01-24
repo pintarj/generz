@@ -4,8 +4,13 @@ import {State} from './state';
 export class NonDeterministicStatesMap {
     private map: Map<string, State>;
 
-    public constructor(public readonly context: Context) {
+    public constructor(public readonly context: Context, initial_states?: State[]) {
         this.map = new Map();
+
+        if (initial_states !== undefined) {
+            for (let state of initial_states)
+                this.map.set(state.id.toString(), state);
+        }
     }
 
     public get_or_create(non_deterministic_states: State[]): State {

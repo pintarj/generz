@@ -77,3 +77,36 @@ test('state-repeated-in-key', () => {
     expect(state_0_0.id).toBe(0);
     expect(state_0_1.id).toBe(0);
 });
+
+test('initial-states', () => {
+    const states = [
+        new State(1),
+        new State(2),
+        new State(3),
+        new State(4)
+    ];
+    const map = new NonDeterministicStatesMap(new Context(), states);
+    const state_0 = map.get_or_create([states[0]]);
+    const state_1 = map.get_or_create([states[1]]);
+    const state_2 = map.get_or_create([states[2]]);
+    const state_3 = map.get_or_create([states[3]]);
+    expect(state_0.id).toBe(1);
+    expect(state_1.id).toBe(2);
+    expect(state_2.id).toBe(3);
+    expect(state_3.id).toBe(4);
+});
+
+test('initial-states-create-additional', () => {
+    const context = new Context();
+    const states = [
+        context.create_new_state(),
+        context.create_new_state()
+    ];
+    const map = new NonDeterministicStatesMap(context, states);
+    const state_0 = map.get_or_create([states[0]]);
+    const state_1 = map.get_or_create([states[1]]);
+    const state_0_1 = map.get_or_create([states[0], states[1]]);
+    expect(state_0.id).toBe(0);
+    expect(state_1.id).toBe(1);
+    expect(state_0_1.id).toBe(2);
+});
