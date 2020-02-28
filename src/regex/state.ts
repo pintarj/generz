@@ -4,9 +4,11 @@ import {Transition} from './transition';
 
 export class State {
     public readonly transitions: Transition[] = [];
+    public is_final: boolean = false;
 
-    constructor(public readonly id: number) {
-        // ...
+    constructor(public readonly id: number, options?: {is_final?: boolean}) {
+        options = options || {};
+        this.is_final = options.is_final === true;
     }
 
     public add_transitions(...transitions: Transition[]) {

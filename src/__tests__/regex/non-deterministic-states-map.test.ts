@@ -136,3 +136,19 @@ test('new-state-transitions-union', () => {
     expect(state_0_1.transitions[0].state.id).toBe(2);
     expect(state_0_1.transitions[1].state.id).toBe(2);
 });
+
+test('new-state-transitions-final', () => {
+    const context = new Context();
+    const states = [
+        context.create_new_state(),
+        context.create_new_state(),
+        context.create_new_state(),
+        context.create_new_state()
+    ];
+    states[2].is_final = true;
+    states[3].is_final = true;
+    const map = new NonDeterministicStatesMap(context, states);
+    expect(map.get_or_create([states[0], states[1]]).is_final).toBe(false);
+    expect(map.get_or_create([states[1], states[2]]).is_final).toBe(true);
+    expect(map.get_or_create([states[2], states[3]]).is_final).toBe(true);
+});

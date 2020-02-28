@@ -28,6 +28,9 @@ export class NonDeterministicStatesMap {
         value = this.context.create_new_state();
 
         for (let state of non_deterministic_states) {
+            if (state.is_final)
+                value.is_final = true;
+
             for (let transition of state.transitions) {
                 value.add_transition(transition.symbol, transition.state);
             }

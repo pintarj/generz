@@ -5,8 +5,18 @@ import {Transition} from '../../regex/transition';
 test('state-empty', () => {
     const s = new State(0);
     expect(s.id).toBe(0);
+    expect(s.is_final).toBe(false);
     expect(s.transitions.length).toBe(0);
     expect(s.get_reachable_transitions().length).toBe(0);
+});
+
+test('state-empty-define-final', () => {
+    const state_0 = new State(0, {});
+    const state_1 = new State(1, {is_final: false});
+    const state_2 = new State(2, {is_final: true});
+    expect(state_0.is_final).toBe(false);
+    expect(state_1.is_final).toBe(false);
+    expect(state_2.is_final).toBe(true);
 });
 
 test('state-deterministic-reach', () => {
