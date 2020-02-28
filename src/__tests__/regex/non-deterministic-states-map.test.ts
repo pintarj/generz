@@ -1,6 +1,7 @@
 import {Context} from '../../regex/context';
 import {NonDeterministicStatesMap} from '../../regex/non-deterministic-states-map';
 import {State} from '../../regex/state';
+import {Symbol} from '../../regex/symbol';
 
 test('single-state-key', () => {
     const state_0 = new State(0);
@@ -109,4 +110,29 @@ test('initial-states-create-additional', () => {
     expect(state_0.id).toBe(0);
     expect(state_1.id).toBe(1);
     expect(state_0_1.id).toBe(2);
+});
+
+test('new-state-transitions-union', () => {
+    const context = new Context();
+    const states = [
+        context.create_new_state(),
+        context.create_new_state(),
+        context.create_new_state()
+    ];
+    const map = new NonDeterministicStatesMap(context, states);
+    const state_0 = map.get_or_create([states[0]]);
+    const state_1 = map.get_or_create([states[1]]);
+    const state_2 = map.get_or_create([states[2]]);
+    state_0.add_transition(new Symbol(8), state_2);
+    state_1.add_transition(new Symbol(16), state_2);
+    const state_0_1 = map.get_or_create([states[0], states[1]]);
+    expect(state_0.id).toBe(0);
+    expect(state_1.id).toBe(1);
+    expect(state_2.id).toBe(2);
+    expect(state_0_1.id).toBe(3);
+    expect(state_0_1.transitions.length).toBe(2);
+    expect(state_0_1.transitions[0].symbol.code_point).toBe(8);
+    expect(state_0_1.transitions[1].symbol.code_point).toBe(16);
+    expect(state_0_1.transitions[0].state.id).toBe(2);
+    expect(state_0_1.transitions[1].state.id).toBe(2);
 });

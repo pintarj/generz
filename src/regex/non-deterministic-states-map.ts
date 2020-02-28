@@ -13,6 +13,11 @@ export class NonDeterministicStatesMap {
         }
     }
 
+    /**
+     * Given a set of states (identified by the ids of states) returns a
+     * new non-deterministic state which transitions are the union of the
+     * transitions of the specified states set.
+     */
     public get_or_create(non_deterministic_states: State[]): State {
         const key   = [... new Set(non_deterministic_states.map(state => state.id))].sort().join(',');
         let   value = this.map.get(key);
@@ -21,6 +26,13 @@ export class NonDeterministicStatesMap {
             return value;
 
         value = this.context.create_new_state();
+
+        for (let state of non_deterministic_states) {
+            for (let transition of state.transitions) {
+                value.add_transition(transition.symbol, transition.state);
+            }
+        }
+
         this.map.set(key, value);
         return value;
     }
