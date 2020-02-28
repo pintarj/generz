@@ -42,6 +42,15 @@ test('state-deterministic-reach', () => {
     expect(reachable[1].state.id).toBe(1);
 });
 
+test('state-deterministic-reach-loop', () => {
+    const state_0 = new State(0);
+    const state_1 = new State(1);
+    state_0.add_epsilon_transition(state_1);
+    state_1.add_epsilon_transition(state_0);
+    state_0.get_reachable_transitions();
+    expect(true).toBe(true);
+});
+
 test('state-non-deterministic-reach', () => {
     const symbol_2 = new Symbol(16);
     const symbol_3 = new Symbol(4);
@@ -59,12 +68,8 @@ test('state-non-deterministic-reach', () => {
     state_2.add_epsilon_transition(state_5);
     const reachable = state_0.get_reachable_transitions();
     expect(reachable.length).toBe(3);
-    expect(reachable[0].symbol.code_point).toBe(4);
-    expect(reachable[1].symbol.code_point).toBe(8);
-    expect(reachable[2].symbol.code_point).toBe(16);
-    expect(reachable[0].state.id).toBe(3);
-    expect(reachable[1].state.id).toBe(4);
-    expect(reachable[2].state.id).toBe(2);
+    expect(reachable.map(x => x.symbol.code_point).sort((a, b) => a - b)).toEqual([4, 8, 16]);
+    expect(reachable.map(x => x.state.id).sort((a, b) => a - b)).toEqual([2, 3, 4]);
 });
 
 test('state-transitive-reachable-states-simple', () => {

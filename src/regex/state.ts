@@ -34,19 +34,30 @@ export class State {
      * and therefore represent a multi-state.
      */
     public get_reachable_transitions(): Transition[] {
-        const states: Transition[] = [];
+        const reachable: Transition[] = [];
+        const queue: Transition[] = [...this.transitions];
+        const already_queued = new Set([...this.transitions]);
 
-        for (let i = 0; i < this.transitions.length; ++i) {
-            const transition = this.transitions[i];
+        while (true) {
+            const transition = queue.shift();
+
+            if (transition === undefined)
+                break;
 
             if (transition.symbol.is_epsilon()) {
-                states.push(...transition.state.get_reachable_transitions());
+                for (let next_transition of transition.state.transitions) {
+                    if (already_queued.has(next_transition))
+                        continue;
+
+                    queue.push(next_transition);
+                    already_queued.add(next_transition);
+                }
             } else {
-                states.push(transition);
+                reachable.push(transition);
             }
         }
 
-        return states;
+        return reachable;
     }
 
     public get_transitively_reachable_states(): State[] {
