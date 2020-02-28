@@ -1,5 +1,6 @@
 import {State} from '../../regex/state';
 import {Symbol} from "../../regex/symbol";
+import {Transition} from '../../regex/transition';
 
 test('state-empty', () => {
     const s = new State(0);
@@ -127,4 +128,30 @@ test('state-transitive-reachable-states-loop', () => {
     expect(reachable_1[0].id).toBe(0);
     expect(reachable_1[1].id).toBe(1);
     expect(reachable_1[2].id).toBe(2);
+});
+
+test('state-multi-transition-add', () => {
+    const state_0 = new State(0);
+    const state_1 = new State(1);
+    const symbol_0 = new Symbol(32);
+    const symbol_1 = new Symbol(64);
+    state_0.add_transitions(new Transition(symbol_0, state_1), new Transition(symbol_1, state_1));
+    expect(state_0.transitions.length).toBe(2);
+    expect(state_1.transitions.length).toBe(0);
+    expect(state_0.transitions[0].symbol.code_point).toBe(32);
+    expect(state_0.transitions[1].symbol.code_point).toBe(64);
+    expect(state_0.transitions[0].state.id).toBe(1);
+    expect(state_0.transitions[1].state.id).toBe(1);
+});
+
+test('state-transition-remove-all', () => {
+    const state_0 = new State(0);
+    const state_1 = new State(1);
+    state_0.add_epsilon_transition(state_1);
+    state_0.add_epsilon_transition(state_1);
+    expect(state_0.transitions.length).toBe(2);
+    expect(state_1.transitions.length).toBe(0);
+    state_0.remove_all_transitions();
+    expect(state_0.transitions.length).toBe(0);
+    expect(state_1.transitions.length).toBe(0);
 });

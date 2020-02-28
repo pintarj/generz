@@ -9,12 +9,20 @@ export class State {
         // ...
     }
 
+    public add_transitions(...transitions: Transition[]) {
+        this.transitions.push(...transitions);
+    }
+
     public add_transition(symbol: Symbol, state: State) {
-        this.transitions.push(new Transition(symbol, state));
+        this.add_transitions(new Transition(symbol, state));
     }
 
     public add_epsilon_transition(state: State) {
         this.add_transition(EpsilonSymbol.INSTANCE, state);
+    }
+
+    public remove_all_transitions() {
+        this.transitions.length = 0; // wow, amazing trick
     }
 
     /**
