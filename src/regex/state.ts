@@ -1,5 +1,5 @@
 import {EpsilonSymbol} from './epsilon-symbol';
-import {Symbol} from './symbol';
+import {Symbol as GenerzSymbol} from './symbol';
 import {Transition} from './transition';
 
 export class State {
@@ -15,7 +15,7 @@ export class State {
         this.transitions.push(...transitions);
     }
 
-    public add_transition(symbol: Symbol, state: State) {
+    public add_transition(symbol: GenerzSymbol, state: State) {
         this.add_transitions(new Transition(symbol, state));
     }
 
@@ -60,23 +60,43 @@ export class State {
         return reachable;
     }
 
-    public get_transitively_reachable_states(): State[] {
-        const processed_states = new Map<number, State>();
-        const queue: State[] = [this];
+    public get_transitively_reachable_states_iterable(): Iterable<State> {
+        const state_this = this;
+        return {
+            [Symbol.iterator](): Iterator<State> {
+                const processed_states = new Map<number, State>();
+                const queue: State[] = [state_this];
 
-        while (true) {
-            const state = queue.shift();
+                return {
+                    next(): IteratorResult<State> {
+                        while (true) {
+                            const state = queue.shift();
 
-            if (state === undefined)
-                break;
+                            if (state === undefined) {
+                                return {
+                                    done: true,
+                                    value: <any> undefined
+                                };
+                            }
 
-            if (processed_states.has(state.id))
-                continue;
+                            if (processed_states.has(state.id))
+                                continue;
 
-            processed_states.set(state.id, state);
-            queue.push(...state.transitions.map(transition => transition.state));
+                            processed_states.set(state.id, state);
+                            queue.push(...state.transitions.map(transition => transition.state));
+
+                            return {
+                                done: false,
+                                value: state
+                            };
+                        }
+                    }
+                };
+            }
         }
+    }
 
-        return Array.from(processed_states.values());
+    public get_transitively_reachable_states(): State[] {
+        return Array.from(this.get_transitively_reachable_states_iterable());
     }
 }
