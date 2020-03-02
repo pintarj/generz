@@ -99,4 +99,33 @@ export class State {
     public get_transitively_reachable_states(): State[] {
         return Array.from(this.get_transitively_reachable_states_iterable());
     }
+
+    public expand_final_through_epsilon_transitions() {
+        if (!this.is_final)
+            return;
+
+        const queue: State[] = [this];
+        const already_queued: Set<number> = new Set([this.id]);
+
+        while (true) {
+            const state = queue.shift();
+
+            if (state === undefined)
+                break;
+
+            for (let transition of state.transitions) {
+                if (!transition.symbol.is_epsilon())
+                    continue;
+
+                const next_state = transition.state;
+
+                if (already_queued.has(next_state.id))
+                    continue;
+
+                next_state.is_final = true;
+                queue.push(next_state);
+                already_queued.add(next_state.id);
+            }
+        }
+    }
 }

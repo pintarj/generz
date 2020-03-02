@@ -1,6 +1,7 @@
 import {State} from '../../regex/state';
 import {Symbol} from "../../regex/symbol";
 import {Transition} from '../../regex/transition';
+import {Context} from '../../regex/context';
 
 test('state-empty', () => {
     const s = new State(0);
@@ -169,4 +170,90 @@ test('state-transition-remove-all', () => {
     state_0.remove_all_transitions();
     expect(state_0.transitions.length).toBe(0);
     expect(state_1.transitions.length).toBe(0);
+});
+
+test('state-expand-final-single-loop-keep-false', () => {
+    const state_0 = new State(0);
+    state_0.add_epsilon_transition(state_0);
+    state_0.expand_final_through_epsilon_transitions();
+    expect(state_0.is_final).toBe(false);
+});
+
+test('state-expand-final-double-loop-keep-false', () => {
+    const state_0 = new State(0);
+    const state_1 = new State(1);
+    state_0.add_epsilon_transition(state_1);
+    state_1.add_epsilon_transition(state_0);
+    state_0.expand_final_through_epsilon_transitions();
+    expect(state_0.is_final).toBe(false);
+    expect(state_1.is_final).toBe(false);
+});
+
+test('state-expand-final-single-loop-expand-true', () => {
+    const state_0 = new State(0);
+    state_0.is_final = true;
+    state_0.add_epsilon_transition(state_0);
+    state_0.expand_final_through_epsilon_transitions();
+    expect(state_0.is_final).toBe(true);
+});
+
+test('state-expand-final-double-loop-expand-true', () => {
+    const state_0 = new State(0);
+    const state_1 = new State(1);
+    state_0.is_final = true;
+    state_0.add_epsilon_transition(state_1);
+    state_1.add_epsilon_transition(state_0);
+    state_0.expand_final_through_epsilon_transitions();
+    expect(state_0.is_final).toBe(true);
+    expect(state_1.is_final).toBe(true);
+});
+
+test('state-expand-final-expand-true-transitive', () => {
+    const state_0 = new State(0);
+    const state_1 = new State(1);
+    const state_2 = new State(2);
+    state_0.is_final = true;
+    state_0.add_epsilon_transition(state_1);
+    state_1.add_epsilon_transition(state_2);
+    state_0.expand_final_through_epsilon_transitions();
+    expect(state_0.is_final).toBe(true);
+    expect(state_1.is_final).toBe(true);
+    expect(state_2.is_final).toBe(true);
+});
+
+test('state-expand-final-expand-true-no-epsilon', () => {
+    const state_0 = new State(0);
+    const state_1 = new State(1);
+    state_0.is_final = true;
+    state_0.add_transition(new Symbol(32), state_1);
+    state_0.expand_final_through_epsilon_transitions();
+    expect(state_0.is_final).toBe(true);
+    expect(state_1.is_final).toBe(false);
+});
+
+test('state-expand-final-complex', () => {
+    const context = new Context();
+    const states = [
+        context.create_new_state(),
+        context.create_new_state(),
+        context.create_new_state(),
+        context.create_new_state(),
+        context.create_new_state(),
+        context.create_new_state(),
+    ];
+    states[0].is_final = true;
+    states[0].add_epsilon_transition(states[0]);
+    states[0].add_epsilon_transition(states[1]);
+    states[1].add_epsilon_transition(states[2]);
+    states[2].add_epsilon_transition(states[0]);
+    states[1].add_transition(new Symbol(1024), states[3]);
+    states[0].add_transition(new Symbol(1024), states[4]);
+    states[4].add_epsilon_transition(states[5]);
+    states[0].expand_final_through_epsilon_transitions();
+    expect(states[0].is_final).toBe(true);
+    expect(states[1].is_final).toBe(true);
+    expect(states[2].is_final).toBe(true);
+    expect(states[3].is_final).toBe(false);
+    expect(states[4].is_final).toBe(false);
+    expect(states[5].is_final).toBe(false);
 });
