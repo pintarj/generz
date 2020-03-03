@@ -296,3 +296,25 @@ test('state-is-deterministic-true', () => {
     expect(states[1].is_deterministic()).toBe(true);
     expect(states[2].is_deterministic()).toBe(true);
 });
+
+test('state-get-transitions-multi-state-map', () => {
+    const context = new Context();
+    const states = [
+        context.create_new_state(),
+        context.create_new_state(),
+        context.create_new_state(),
+        context.create_new_state(),
+        context.create_new_state(),
+        context.create_new_state()
+    ];
+    states[0].add_transition(new Symbol(100), states[1]);
+    states[0].add_transition(new Symbol(100), states[2]);
+    states[0].add_epsilon_transition(states[2]);
+    states[2].add_epsilon_transition(states[0]);
+    states[0].add_epsilon_transition(states[0]);
+    states[0].add_transition(new Symbol(100), states[3]);
+    states[0].add_transition(new Symbol(200), states[4]);
+    states[0].add_epsilon_transition(states[5]);
+    const map = states[0].get_transitions_multi_state_map();
+    expect(map.size).toBe(2);
+});

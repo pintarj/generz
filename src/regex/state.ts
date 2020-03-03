@@ -141,4 +141,22 @@ export class State {
 
         return true;
     }
+
+    public get_transitions_multi_state_map(): Map<number, State[]> {
+        const map = new Map<number, State[]>();
+
+        for (let transition of this.get_reachable_transitions()) {
+            const code_point = transition.symbol.code_point;
+            let symbol_states = map.get(code_point);
+
+            if (symbol_states === undefined) {
+                symbol_states = [];
+                map.set(code_point, symbol_states);
+            }
+
+            symbol_states.push(transition.state);
+        }
+
+        return map;
+    }
 }
