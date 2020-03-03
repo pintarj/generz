@@ -1,6 +1,8 @@
 import {EpsilonSymbol} from './epsilon-symbol';
 import {Symbol as GenerzSymbol} from './symbol';
 import {Transition} from './transition';
+import {NonDeterministicStatesMap} from './non-deterministic-states-map';
+import {Context} from './context';
 
 export class State {
     public readonly transitions: Transition[] = [];
@@ -186,5 +188,42 @@ export class State {
         }
 
         return map;
+    }
+
+    public remove_non_determinism(context: Context) {
+        const all_states = this.get_transitively_reachable_states();
+
+        for (let final_state of all_states.filter((state: State) => state.is_final))
+            final_state.expand_final_through_epsilon_transitions();
+
+        for (let state of all_states.filter((state: State) => !state.is_final))
+            state.is_final = state.reaches_a_final_state();
+
+        const states_map = new NonDeterministicStatesMap(context, all_states);
+        const already_queued = new Set<number>([this.id]);
+        const queue: State[] = [this];
+
+        while (true) {
+            const state = queue.shift();
+
+            if (state === undefined)
+                break;
+
+            const map = state.get_transitions_multi_state_map();
+            const transitions: Transition[] = [];
+
+            for (let [code_point, states] of map.entries()) {
+                const next_state = states_map.get_or_create(states);
+                transitions.push(new Transition(new GenerzSymbol(code_point), next_state));
+
+                if (!already_queued.has(next_state.id)) {
+                    queue.push(next_state);
+                    already_queued.add(next_state.id);
+                }
+            }
+
+            state.remove_all_transitions();
+            state.add_transitions(...transitions);
+        }
     }
 }
