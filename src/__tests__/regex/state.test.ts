@@ -257,3 +257,42 @@ test('state-expand-final-complex', () => {
     expect(states[4].is_final).toBe(false);
     expect(states[5].is_final).toBe(false);
 });
+
+test('state-is-deterministic-false-epsilon', () => {
+    const context = new Context();
+    const states = [
+        context.create_new_state(),
+        context.create_new_state()
+    ];
+    states[0].add_epsilon_transition(states[1]);
+    expect(states[0].is_deterministic()).toBe(false);
+    expect(states[1].is_deterministic()).toBe(true);
+});
+
+test('state-is-deterministic-false-double-symbol', () => {
+    const context = new Context();
+    const states = [
+        context.create_new_state(),
+        context.create_new_state(),
+        context.create_new_state()
+    ];
+    states[0].add_transition(new Symbol(2), states[1]);
+    states[0].add_transition(new Symbol(2), states[2]);
+    expect(states[0].is_deterministic()).toBe(false);
+    expect(states[1].is_deterministic()).toBe(true);
+    expect(states[2].is_deterministic()).toBe(true);
+});
+
+test('state-is-deterministic-true', () => {
+    const context = new Context();
+    const states = [
+        context.create_new_state(),
+        context.create_new_state(),
+        context.create_new_state()
+    ];
+    states[0].add_transition(new Symbol(2), states[1]);
+    states[0].add_transition(new Symbol(4), states[2]);
+    expect(states[0].is_deterministic()).toBe(true);
+    expect(states[1].is_deterministic()).toBe(true);
+    expect(states[2].is_deterministic()).toBe(true);
+});

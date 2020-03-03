@@ -128,4 +128,17 @@ export class State {
             }
         }
     }
+
+    public is_deterministic(): boolean {
+        const seen_symbol = new Set<number>();
+
+        for (let transition of this.transitions) {
+            if (transition.symbol.is_epsilon() || seen_symbol.has(transition.symbol.code_point))
+                return false;
+
+            seen_symbol.add(transition.symbol.code_point);
+        }
+
+        return true;
+    }
 }
