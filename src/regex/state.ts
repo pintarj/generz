@@ -129,6 +129,34 @@ export class State {
         }
     }
 
+    public reaches_a_final_state(): boolean {
+        const queue: State[] = [this];
+        const already_queued: Set<number> = new Set([this.id]);
+
+        while (true) {
+            const state = queue.shift();
+
+            if (state === undefined)
+                return false;
+
+            if (state.is_final)
+                return true;
+
+            for (let transition of state.transitions) {
+                if (!transition.symbol.is_epsilon())
+                    continue;
+
+                const next_state = transition.state;
+
+                if (already_queued.has(next_state.id))
+                    continue;
+
+                queue.push(next_state);
+                already_queued.add(next_state.id);
+            }
+        }
+    }
+
     public is_deterministic(): boolean {
         const seen_symbol = new Set<number>();
 

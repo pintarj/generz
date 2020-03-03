@@ -258,6 +258,92 @@ test('state-expand-final-complex', () => {
     expect(states[5].is_final).toBe(false);
 });
 
+test('state-reaches-final-simple', () => {
+    const context = new Context();
+    const states = [
+        context.create_new_state(),
+        context.create_new_state()
+    ];
+    states[0].add_epsilon_transition(states[1]);
+    states[1].is_final = true;
+    expect(states[0].reaches_a_final_state()).toBe(true);
+    expect(states[1].reaches_a_final_state()).toBe(true);
+});
+
+test('state-reaches-final-loop', () => {
+    const context = new Context();
+    const states = [
+        context.create_new_state(),
+        context.create_new_state()
+    ];
+    states[0].add_epsilon_transition(states[1]);
+    states[1].add_epsilon_transition(states[0]);
+    states[1].is_final = true;
+    expect(states[0].reaches_a_final_state()).toBe(true);
+    expect(states[1].reaches_a_final_state()).toBe(true);
+});
+
+test('state-reaches-final-loop-false', () => {
+    const context = new Context();
+    const states = [
+        context.create_new_state(),
+        context.create_new_state()
+    ];
+    states[0].add_epsilon_transition(states[1]);
+    states[1].add_epsilon_transition(states[0]);
+    expect(states[0].reaches_a_final_state()).toBe(false);
+    expect(states[1].reaches_a_final_state()).toBe(false);
+});
+
+test('state-reaches-final-no-through-symbol', () => {
+    const context = new Context();
+    const states = [
+        context.create_new_state(),
+        context.create_new_state()
+    ];
+    states[0].add_transition(new Symbol(2), states[1]);
+    states[1].is_final = true;
+    expect(states[0].reaches_a_final_state()).toBe(false);
+    expect(states[1].reaches_a_final_state()).toBe(true);
+});
+
+test('state-reaches-final-transitive', () => {
+    const context = new Context();
+    const states = [
+        context.create_new_state(),
+        context.create_new_state(),
+        context.create_new_state()
+    ];
+    states[0].add_epsilon_transition(states[1]);
+    states[1].add_epsilon_transition(states[2]);
+    states[2].is_final = true;
+    expect(states[0].reaches_a_final_state()).toBe(true);
+    expect(states[1].reaches_a_final_state()).toBe(true);
+    expect(states[2].reaches_a_final_state()).toBe(true);
+});
+
+test('state-reaches-final-in-middle', () => {
+    const context = new Context();
+    const states = [
+        context.create_new_state(),
+        context.create_new_state(),
+        context.create_new_state(),
+        context.create_new_state(),
+        context.create_new_state()
+    ];
+    states[2].is_final = true;
+    states[0].add_epsilon_transition(states[1]);
+    states[1].add_epsilon_transition(states[2]);
+    states[2].add_epsilon_transition(states[3]);
+    states[3].add_epsilon_transition(states[4]);
+    expect(states[0].reaches_a_final_state()).toBe(true);
+    expect(states[1].reaches_a_final_state()).toBe(true);
+    expect(states[2].reaches_a_final_state()).toBe(true
+    );
+    expect(states[3].reaches_a_final_state()).toBe(false);
+    expect(states[4].reaches_a_final_state()).toBe(false);
+});
+
 test('state-is-deterministic-false-epsilon', () => {
     const context = new Context();
     const states = [
