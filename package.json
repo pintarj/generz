@@ -33,7 +33,6 @@
   },
   "homepage": "https://github.com/pintarj/generz#readme",
   "devDependencies": {
-    "@types/chalk": "^2.2.0",
     "@types/fs-extra": "^5.0.5",
     "@types/jest": "^24.0.11",
     "@types/node": "^11.11.4",
