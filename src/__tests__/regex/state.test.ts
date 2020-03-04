@@ -568,3 +568,49 @@ test('state-remove-non-determinism-case-3', () => {
     expect(states[1].is_final).toBe(true);
     expect(states[2].is_final).toBe(true);
 });
+
+test('state-match-a*', () => {
+    const context = new Context();
+    const s0 = context.create_new_state();
+    s0.is_final = true;
+    s0.add_transition(new Symbol('a'.codePointAt(0)!), s0);
+    expect(s0.match('')).toBe('');
+    expect(s0.match('b')).toBe('');
+    expect(s0.match('a')).toBe('a');
+    expect(s0.match('aaaaa')).toBe('aaaaa');
+    expect(s0.match('aaaaaaaabbbbaaaa')).toBe('aaaaaaaa');
+});
+
+test('state-match-(ab)*', () => {
+    const context = new Context();
+    const s0 = context.create_new_state();
+    const s1 = context.create_new_state();
+    s0.is_final = true;
+    s0.add_transition(new Symbol('a'.codePointAt(0)!), s1);
+    s1.add_transition(new Symbol('b'.codePointAt(0)!), s0);
+    expect(s0.match('')).toBe('');
+    expect(s0.match('ab')).toBe('ab');
+    expect(s0.match('abab')).toBe('abab');
+    expect(s0.match('a')).toBe('');
+    expect(s0.match('ababa')).toBe('abab');
+    expect(s0.match('ababxxabab')).toBe('abab');
+});
+
+test('state-match-ab?c', () => {
+    const context = new Context();
+    const s0 = context.create_new_state();
+    const s1 = context.create_new_state();
+    const s2 = context.create_new_state();
+    const s3 = context.create_new_state();
+    s3.is_final = true;
+    s0.add_transition(new Symbol('a'.codePointAt(0)!), s1);
+    s1.add_transition(new Symbol('b'.codePointAt(0)!), s2);
+    s1.add_transition(new Symbol('c'.codePointAt(0)!), s3);
+    s2.add_transition(new Symbol('c'.codePointAt(0)!), s3);
+    expect(s0.match('ac')).toBe('ac');
+    expect(s0.match('abc')).toBe('abc');
+    expect(s0.match('')).toBe(false);
+    expect(s0.match('aabc')).toBe(false);
+    expect(s0.match('ab')).toBe(false);
+    expect(s0.match('a')).toBe(false);
+});

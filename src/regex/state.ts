@@ -226,4 +226,35 @@ export class State {
             state.add_transitions(...transitions);
         }
     }
+
+    /**
+     * Method tries to match the specified input stream with the current state.
+     * The string it's matched from it's first character.
+     * @returns False if input string was not matched, otherwise the matched prefix of input string is returned.
+     * */
+    public match(input: string): false|string {
+        const symbols = Array.from(input);
+        let last_match: number|undefined = undefined;
+        let index: number = 0;
+        let state: State = this;
+
+        while (true) {
+            if (state.is_final)
+                last_match = index;
+
+            if (index === symbols.length)
+                break;
+
+            const code_point = symbols[index].codePointAt(0);
+            const transition = state.transitions.find(x => x.symbol.code_point === code_point);
+
+            if (transition === undefined)
+                break;
+
+            state = transition.state;
+            index += 1;
+        }
+
+        return last_match === undefined ? false : symbols.slice(0, last_match).join('');
+    }
 }
