@@ -55,6 +55,35 @@ test('regular-expression-zero-or-one', () => {
     expect(regex.match('ba')).toBe('');
 });
 
+test('regular-expression-grouping', () => {
+    const regex = f('(ab|xy)+');
+    expect(regex.match('ab')).toBe('ab');
+    expect(regex.match('abxy')).toBe('abxy');
+    expect(regex.match('abxyax')).toBe('abxy');
+    expect(regex.match('xaby')).toBe(false);
+});
+
+test('regular-expression-grouping-empty', () => {
+    const regex = f('()+');
+    expect(regex.match('')).toBe('');
+    expect(regex.match('a')).toBe('');
+});
+
+test('regular-expression-grouping-nested', () => {
+    const regex = f('(a(xb)*b)+');
+    expect(regex.match('ab')).toBe('ab');
+    expect(regex.match('abab')).toBe('abab');
+    expect(regex.match('axbb')).toBe('axbb');
+    expect(regex.match('axbxbb')).toBe('axbxbb');
+    expect(regex.match('axbxbbabaxbb')).toBe('axbxbbabaxbb');
+    expect(regex.match('axbxbabaxbb')).toBe(false);
+    expect(regex.match('')).toBe(false);
+});
+
+test('regular-expression-grouping-no-closing-parenthesis', () => {
+    expect(() => {f('(bulbasaur').match('ab');}).toThrowError();
+});
+
 test('regular-expression-at-least-two-end', () => {
     const regex = f('a*aa');
     expect(regex.match('aaaaa')).toBe('aaaaa');

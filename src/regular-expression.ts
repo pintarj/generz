@@ -2,6 +2,7 @@ import {Reader} from './reader';
 import {Context} from './regex/context';
 import {Symbol} from './regex/symbol';
 import {State} from './regex/state';
+import {CodeGenerzError as CodeError} from './error';
 
 type ParsingResult = {
     initial_state: State,
@@ -21,6 +22,17 @@ export class RegularExpression {
         const code_point = this.current_code_point;
         this.current_code_point = this.reader.read().codePointAt(0) || NaN;
         return code_point;
+    }
+
+    private expect_current_code_point_then_consume(expected_code_point: number) {
+        if (this.current_code_point !== expected_code_point) {
+            const current = Number.isNaN(this.current_code_point) ? 'EOF' : String.fromCodePoint(this.current_code_point);
+            const expected = Number.isNaN(expected_code_point) ? 'EOF' : String.fromCodePoint(expected_code_point);
+            // TODO insert the correct file name
+            CodeError.throw('<unknown>', `Expected \`${expected}\` character, but \`${current}\` found.`);
+        }
+
+        this.consume_current_code_point();
     }
 
     private static is_valid_letter(code_point: number): boolean {
@@ -46,6 +58,13 @@ export class RegularExpression {
     }
 
     private parse_block(): ParsingResult|undefined {
+        if (this.current_code_point === 0x28) { // (
+            this.consume_current_code_point();
+            const sub_machine = this.parse_alternation();
+            this.expect_current_code_point_then_consume(0x29);
+            return sub_machine;
+        }
+
         return this.parse_atom();
     }
 
