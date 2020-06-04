@@ -67,9 +67,6 @@ node_module
 # output folder
 /lib
 
-# npm's package lock
-package-lock.json
-
 # VSCode project folder
 .vscode/
 
