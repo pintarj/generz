@@ -2,20 +2,23 @@
   "name": "generz",
   "version": "0.1.1",
   "description": "CLI program that generates code parts for compilers",
-  "main": "lib/main.js",
+  "main": "dist/main.js",
   "files": [
-    "lib/**/*"
+    "dist/**/*"
   ],
   "bin": {
-    "generz": "lib/main.js"
+    "generz": "dist/main.js"
   },
   "scripts": {
-    "start": "ts-node src/main.ts",
-    "build": "tsc",
-    "test": "jest --config jestconfig.json",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm test",
-    "postversion": "git push && git push --tags"
+    "clean:dist": "rm -rf dist/",
+    "build": "npm run clean:dist && tsc",
+    "prepare": "npm test",
+    "prestart": "npm run build",
+    "pretest": "npm run build",
+    "postversion": "git push && git push --tags",
+    "start": "node dist/main.js",
+    "start:dev": "ts-node src/main.ts",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -24,7 +27,8 @@
   "keywords": [
     "compilers",
     "code",
-    "generation"
+    "generation",
+    "codegen"
   ],
   "author": "Janez Pintar",
   "license": "MIT",

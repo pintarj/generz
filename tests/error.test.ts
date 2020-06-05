@@ -1,4 +1,4 @@
-import {ArgsGenerzError, CodeGenerzError, InternalGenerzError} from '../error';
+import {ArgsGenerzError, CodeGenerzError, InternalGenerzError} from '@dist/error';
 
 test('args-generz-error', () => {
     const message = 'invalid argument';

@@ -1,4 +1,4 @@
-import {Symbol} from '../../regex/symbol';
+import {Symbol} from '@dist/regex/symbol';
 
 test('symbol-constructor', () => {
     const c = 64;

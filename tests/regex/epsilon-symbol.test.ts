@@ -1,4 +1,4 @@
-import {EpsilonSymbol} from '../../regex/epsilon-symbol';
+import {EpsilonSymbol} from '@dist/regex/epsilon-symbol';
 
 test('epsilon-symbol-constructor', () => {
     const s = new EpsilonSymbol();

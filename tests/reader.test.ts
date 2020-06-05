@@ -1,4 +1,4 @@
-import {Reader, StringReader} from '../reader';
+import {Reader, StringReader} from '@dist/reader';
 
 test('string-reader', () => {
     var reader: Reader = new StringReader('pikachu');

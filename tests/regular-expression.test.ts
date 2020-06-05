@@ -1,6 +1,6 @@
-import {RegularExpression} from '../regular-expression';
-import {StringReader} from '../reader';
-import {State} from '../regex/state';
+import {RegularExpression} from '@dist/regular-expression';
+import {StringReader} from '@dist/reader';
+import {State} from '@dist/regex/state';
 
 function f(regex: string): State {
     return (new RegularExpression(new StringReader(regex))).generate();

@@ -7,6 +7,7 @@ export default class Pipeline {
     }
 
     public run() {
+        // @ts-ignore
         const source = fs.readFileSync(this.args.file, 'utf8');
         // TODO give source to reader
     }

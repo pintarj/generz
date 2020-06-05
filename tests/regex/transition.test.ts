@@ -1,6 +1,6 @@
-import {Symbol} from '../../regex/symbol';
-import {State} from '../../regex/state';
-import {Transition} from '../../regex/transition';
+import {Symbol} from '@dist/regex/symbol';
+import {State} from '@dist/regex/state';
+import {Transition} from '@dist/regex/transition';
 
 test('transition-constructor', () => {
     const symbol = new Symbol(32);

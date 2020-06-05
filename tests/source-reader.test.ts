@@ -1,5 +1,5 @@
-import {StringReader} from '../reader';
-import {source} from '../source/reader';
+import {StringReader} from '@dist/reader';
+import {source} from '@dist/source/reader';
 
 test('content', () => {
     const reader = new source.Reader(new StringReader('dratini'));

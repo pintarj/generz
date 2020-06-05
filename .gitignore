@@ -65,7 +65,7 @@ typings/
 node_module
 
 # output folder
-/lib
+dist/
 
 # VSCode project folder
 .vscode/

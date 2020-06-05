@@ -1,4 +1,4 @@
-import {source} from '../source/location';
+import {source} from '@dist/source/location';
 
 test('location-point', () => {
     const point = new source.Point(4, 20);

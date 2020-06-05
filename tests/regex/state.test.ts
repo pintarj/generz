@@ -1,7 +1,7 @@
-import {State} from '../../regex/state';
-import {Symbol} from "../../regex/symbol";
-import {Transition} from '../../regex/transition';
-import {Context} from '../../regex/context';
+import {State} from '@dist/regex/state';
+import {Symbol} from '@dist/regex/symbol';
+import {Transition} from '@dist/regex/transition';
+import {Context} from '@dist/regex/context';
 
 test('state-empty', () => {
     const s = new State(0);
