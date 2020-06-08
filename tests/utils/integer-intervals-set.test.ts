@@ -212,3 +212,41 @@ describe('interval-set-add', () => {
         });
     });
 });
+
+describe('interval-set-contains', () => {
+    const set = new IntegerIntervalsSet();
+    set.add(new IntegerInterval(40, 50));
+    set.add(60);
+
+    test('single-left-edge', () => {
+        expect(set.contains(59)).toEqual(false);
+    });
+
+    test('single-right-edge', () => {
+        expect(set.contains(61)).toEqual(false);
+    });
+
+    test('single-match', () => {
+        expect(set.contains(60)).toEqual(true);
+    });
+
+    test('range-left-edge', () => {
+        expect(set.contains(39)).toEqual(false);
+    });
+
+    test('range-left-edge-inclusive', () => {
+        expect(set.contains(40)).toEqual(true);
+    });
+
+    test('range-right-edge', () => {
+        expect(set.contains(50)).toEqual(false);
+    });
+
+    test('range-right-edge-inclusive', () => {
+        expect(set.contains(49)).toEqual(true);
+    });
+
+    test('range-match', () => {
+        expect(set.contains(45)).toEqual(true);
+    });
+});

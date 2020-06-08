@@ -130,4 +130,14 @@ export class IntegerIntervalsSet {
     public get capacity(): number {
         return this.intervals.length;
     }
+
+    /**
+     * Tells if a specified number is stored in this set.
+     * @param x The specified number.
+     * @returns True if the number is present in the set, false otherwise.
+     */
+    public contains(x: number): boolean {
+        const result = this.find_number_interval(x);
+        return result.present;
+    }
 }
