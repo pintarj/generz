@@ -31,9 +31,7 @@ export class NonDeterministicStatesMap {
             if (state.is_final)
                 value.is_final = true;
 
-            for (let transition of state.transitions) {
-                value.add_transition(transition.symbol, transition.state);
-            }
+            value.add_transitions(...state.transitions);
         }
 
         this.map.set(key, value);

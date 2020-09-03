@@ -6,12 +6,6 @@ test('symbol-constructor', () => {
     expect(s.code_point).toBe(c);
 });
 
-test('symbol-epsilon-check', () => {
-    const c = 64;
-    const s = new Symbol(c);
-    expect(s.is_epsilon()).toBe(false);
-});
-
 test('symbol-to-string', () => {
     const x = 'f';
     const c = x.charCodeAt(0);

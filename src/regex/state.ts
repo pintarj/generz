@@ -1,8 +1,7 @@
-import {EpsilonSymbol} from './epsilon-symbol';
-import {Symbol as GenerzSymbol} from './symbol';
-import {Transition} from './transition';
-import {NonDeterministicStatesMap} from './non-deterministic-states-map';
-import {Context} from './context';
+import { Symbol as GenerzSymbol } from './symbol';
+import { Transition } from './transition';
+import { NonDeterministicStatesMap } from './non-deterministic-states-map';
+import { Context } from './context';
 
 export class State {
     public readonly transitions: Transition[] = [];
@@ -22,7 +21,7 @@ export class State {
     }
 
     public add_epsilon_transition(state: State) {
-        this.add_transition(EpsilonSymbol.INSTANCE, state);
+        this.add_transitions(new Transition(undefined, state));
     }
 
     public remove_all_transitions() {
@@ -46,7 +45,7 @@ export class State {
             if (transition === undefined)
                 break;
 
-            if (transition.symbol.is_epsilon()) {
+            if (transition.is_epsilon()) {
                 for (let next_transition of transition.state.transitions) {
                     if (already_queued.has(next_transition))
                         continue;
@@ -116,7 +115,7 @@ export class State {
                 break;
 
             for (let transition of state.transitions) {
-                if (!transition.symbol.is_epsilon())
+                if (!transition.is_epsilon())
                     continue;
 
                 const next_state = transition.state;
@@ -145,7 +144,7 @@ export class State {
                 return true;
 
             for (let transition of state.transitions) {
-                if (!transition.symbol.is_epsilon())
+                if (!transition.is_epsilon())
                     continue;
 
                 const next_state = transition.state;
@@ -163,10 +162,12 @@ export class State {
         const seen_symbol = new Set<number>();
 
         for (let transition of this.transitions) {
-            if (transition.symbol.is_epsilon() || seen_symbol.has(transition.symbol.code_point))
+            const transition_symbol_code = transition.symbol?.code_point;
+
+            if (transition_symbol_code === undefined || seen_symbol.has(transition_symbol_code))
                 return false;
 
-            seen_symbol.add(transition.symbol.code_point);
+            seen_symbol.add(transition_symbol_code);
         }
 
         return true;
@@ -176,7 +177,8 @@ export class State {
         const map = new Map<number, State[]>();
 
         for (let transition of this.get_reachable_transitions()) {
-            const code_point = transition.symbol.code_point;
+            // Note that all transitions returned by `get_reachable_transitions()` are non-epsilon
+            const code_point = transition.symbol!.code_point;
             let symbol_states = map.get(code_point);
 
             if (symbol_states === undefined) {
@@ -246,7 +248,7 @@ export class State {
                 break;
 
             const code_point = symbols[index].codePointAt(0);
-            const transition = state.transitions.find(x => x.symbol.code_point === code_point);
+            const transition = state.transitions.find(x => x.symbol === undefined || x.symbol.code_point === code_point);
 
             if (transition === undefined)
                 break;
