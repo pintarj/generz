@@ -250,3 +250,162 @@ describe('interval-set-contains', () => {
         expect(set.contains(45)).toEqual(true);
     });
 });
+
+describe('interval-set-calculate_differences_and_intersection', () => {
+    let left = new IntegerIntervalsSet();
+    let right = new IntegerIntervalsSet();
+    
+    beforeEach(() => {
+        expect(left.capacity).toEqual(0);
+        expect(right.capacity).toEqual(0);
+    });
+
+    afterEach(() => {
+        left = new IntegerIntervalsSet();
+        right = new IntegerIntervalsSet();
+    });
+    
+    test('empty', () => {
+        const result = IntegerIntervalsSet.calculate_differences_and_intersection(left, right);
+        expect(result.left_difference.capacity).toEqual(0);
+        expect(result.right_difference.capacity).toEqual(0);
+        expect(result.intersection.capacity).toEqual(0);
+    });
+    
+    test('fast-consume-left', () => {
+        left.add(10);
+        left.add(20);
+        const result = IntegerIntervalsSet.calculate_differences_and_intersection(left, right);
+        let left_intervals = (result.left_difference as any).intervals as IntegerInterval[];
+        expect(result.left_difference.capacity).toEqual(2);
+        expect(left_intervals).toHaveLength(2);
+        expect(left_intervals[0].start).toEqual(10);
+        expect(left_intervals[0].end).toEqual(11);
+        expect(left_intervals[1].start).toEqual(20);
+        expect(left_intervals[1].end).toEqual(21);
+        expect(result.right_difference.capacity).toEqual(0);
+        expect(result.intersection.capacity).toEqual(0);
+    });
+    
+    test('fast-consume-right', () => {
+        right.add(10);
+        right.add(20);
+        const result = IntegerIntervalsSet.calculate_differences_and_intersection(left, right);
+        let right_intervals = (result.right_difference as any).intervals as IntegerInterval[];
+        expect(result.left_difference.capacity).toEqual(0);
+        expect(result.right_difference.capacity).toEqual(2);
+        expect(right_intervals).toHaveLength(2);
+        expect(right_intervals[0].start).toEqual(10);
+        expect(right_intervals[0].end).toEqual(11);
+        expect(right_intervals[1].start).toEqual(20);
+        expect(right_intervals[1].end).toEqual(21);
+        expect(result.intersection.capacity).toEqual(0);
+    });
+    
+    test('equal-start-different-end', () => {
+        left.add(new IntegerInterval(10, 15));
+        right.add(new IntegerInterval(10, 20));
+        const result = IntegerIntervalsSet.calculate_differences_and_intersection(left, right);
+        expect(result.left_difference.capacity).toEqual(0);
+        expect(result.right_difference.capacity).toEqual(1);
+        expect(result.intersection.capacity).toEqual(1);
+        const intersection_intervals = (result.intersection as any).intervals as IntegerInterval[];
+        expect(intersection_intervals).toHaveLength(1);
+        expect(intersection_intervals[0].start).toEqual(10);
+        expect(intersection_intervals[0].end).toEqual(15);
+        const right_intervals = (result.right_difference as any).intervals as IntegerInterval[];
+        expect(right_intervals).toHaveLength(1);
+        expect(right_intervals[0].start).toEqual(15);
+        expect(right_intervals[0].end).toEqual(20);
+    });
+    
+    test('equal-start-equal-end', () => {
+        left.add(new IntegerInterval(10, 20));
+        right.add(new IntegerInterval(10, 20));
+        const result = IntegerIntervalsSet.calculate_differences_and_intersection(left, right);
+        expect(result.left_difference.capacity).toEqual(0);
+        expect(result.right_difference.capacity).toEqual(0);
+        expect(result.intersection.capacity).toEqual(1);
+        const intervals = (result.intersection as any).intervals as IntegerInterval[];
+        expect(intervals).toHaveLength(1);
+        expect(intervals[0].start).toEqual(10);
+        expect(intervals[0].end).toEqual(20);
+    });
+
+    test('different-start-equal-end', () => {
+        left.add(new IntegerInterval(5, 20));
+        right.add(new IntegerInterval(10, 20));
+        const result = IntegerIntervalsSet.calculate_differences_and_intersection(left, right);
+        expect(result.left_difference.capacity).toEqual(1);
+        expect(result.right_difference.capacity).toEqual(0);
+        expect(result.intersection.capacity).toEqual(1);
+        const intersection_intervals = (result.intersection as any).intervals as IntegerInterval[];
+        expect(intersection_intervals).toHaveLength(1);
+        expect(intersection_intervals[0].start).toEqual(10);
+        expect(intersection_intervals[0].end).toEqual(20);
+        const left_intervals = (result.left_difference as any).intervals as IntegerInterval[];
+        expect(left_intervals).toHaveLength(1);
+        expect(left_intervals[0].start).toEqual(5);
+        expect(left_intervals[0].end).toEqual(10);
+    });
+
+    test('complex-0', () => {
+        left.add(new IntegerInterval(-5, 1));
+        left.add(3);
+        left.add(new IntegerInterval(6, 9));
+        left.add(new IntegerInterval(11, 14));
+        left.add(new IntegerInterval(15, 20));
+        left.add(22);
+
+        right.add(new IntegerInterval(-16, -14));
+        right.add(new IntegerInterval(-10, -4));
+        right.add(new IntegerInterval(1, 10));
+        right.add(new IntegerInterval(11, 14));
+        right.add(new IntegerInterval(16, 23));
+        right.add(new IntegerInterval(25, 27));
+
+        const result = IntegerIntervalsSet.calculate_differences_and_intersection(left, right);
+        expect(result.left_difference.capacity).toEqual(2);
+        expect(result.right_difference.capacity).toEqual(7);
+        expect(result.intersection.capacity).toEqual(6);
+
+        const left_intervals = (result.left_difference as any).intervals as IntegerInterval[];
+        expect(left_intervals).toHaveLength(2);
+        expect(left_intervals[0].start).toEqual(-4);
+        expect(left_intervals[0].end).toEqual(1);
+        expect(left_intervals[1].start).toEqual(15);
+        expect(left_intervals[1].end).toEqual(16);
+
+        const right_intervals = (result.right_difference as any).intervals as IntegerInterval[];
+        expect(right_intervals).toHaveLength(7);
+        expect(right_intervals[0].start).toEqual(-16);
+        expect(right_intervals[0].end).toEqual(-14);
+        expect(right_intervals[1].start).toEqual(-10);
+        expect(right_intervals[1].end).toEqual(-5);
+        expect(right_intervals[2].start).toEqual(1);
+        expect(right_intervals[2].end).toEqual(3);
+        expect(right_intervals[3].start).toEqual(4);
+        expect(right_intervals[3].end).toEqual(6);
+        expect(right_intervals[4].start).toEqual(9);
+        expect(right_intervals[4].end).toEqual(10);
+        expect(right_intervals[5].start).toEqual(20);
+        expect(right_intervals[5].end).toEqual(22);
+        expect(right_intervals[6].start).toEqual(25);
+        expect(right_intervals[6].end).toEqual(27);
+
+        const intersection_intervals = (result.intersection as any).intervals as IntegerInterval[];
+        expect(intersection_intervals).toHaveLength(6);
+        expect(intersection_intervals[0].start).toEqual(-5);
+        expect(intersection_intervals[0].end).toEqual(-4);
+        expect(intersection_intervals[1].start).toEqual(3);
+        expect(intersection_intervals[1].end).toEqual(4);
+        expect(intersection_intervals[2].start).toEqual(6);
+        expect(intersection_intervals[2].end).toEqual(9);
+        expect(intersection_intervals[3].start).toEqual(11);
+        expect(intersection_intervals[3].end).toEqual(14);
+        expect(intersection_intervals[4].start).toEqual(16);
+        expect(intersection_intervals[4].end).toEqual(20);
+        expect(intersection_intervals[5].start).toEqual(22);
+        expect(intersection_intervals[5].end).toEqual(23);
+    });
+});

@@ -1,3 +1,11 @@
+/**
+ * A type containing differences and intersaction of a type-specific set.
+ */
+export interface DifferencesAndIntersection<T> {
+    left_difference: T,
+    intersection: T,
+    right_difference: T
+};
 
 /**
  * Represents an integer interval
@@ -139,5 +147,91 @@ export class IntegerIntervalsSet {
     public contains(x: number): boolean {
         const result = this.find_number_interval(x);
         return result.present;
+    }
+    
+    /**
+     * Calculates the differences (left and right) and intersection of two specified sets.
+     * @param left The left specified set.
+     * @param right The right specified set.
+     * @returns The calculated differences and intersection.
+     */
+    public static calculate_differences_and_intersection(left: IntegerIntervalsSet, right: IntegerIntervalsSet): DifferencesAndIntersection<IntegerIntervalsSet> {
+        const left_difference = new IntegerIntervalsSet();
+        const intersection = new IntegerIntervalsSet();
+        const right_difference = new IntegerIntervalsSet();
+        
+        const x: {index: number, start: number|undefined, intervals: IntegerInterval[], difference: IntegerIntervalsSet}[] = [
+            {index: 0, start: undefined, intervals: left.intervals, difference: left_difference},
+            {index: 0, start: undefined, intervals: right.intervals, difference: right_difference},
+        ];
+
+        while (true) {
+            for (let key = 0; key < 2; ++key) {
+                // If current object was fully processed, then consume the other.
+                if (x[key].index >= x[key].intervals.length) {
+                    const other = x[key ^ 1];
+
+                    for (let i = other.index; i < other.intervals.length; ++i) {
+                        if (other.start === undefined) {
+                            other.difference.intervals.push(other.intervals[i]);
+                        } else {
+                            const end = other.intervals[i].end;
+                            const interval = new IntegerInterval(other.start, end);
+                            other.difference.intervals.push(interval);
+                            other.start = undefined;
+                        }
+                    }
+
+                    return {left_difference, intersection, right_difference};
+                }
+            }
+
+            if (x[0].start === undefined)
+                x[0].start = x[0].intervals[x[0].index].start;
+
+            if (x[1].start === undefined)
+                x[1].start = x[1].intervals[x[1].index].start;
+
+            let start_difference = x[0].start - x[1].start;
+            
+            if (start_difference === 0) {
+                const left_end = x[0].intervals[x[0].index].end;
+                const end_difference = left_end - x[1].intervals[x[1].index].end;
+
+                if (end_difference === 0) {
+                    intersection.intervals.push(new IntegerInterval(x[0].start, left_end));
+                    x[0].index += 1;
+                    x[1].index += 1;
+                    x[0].start = undefined;
+                    x[1].start = undefined;
+                } else {
+                    // Here nearest between two represent the one with the minor 'end'.
+                    const nearest_index = (end_difference < 0) ? 0 : 1;
+                    const nearest = x[nearest_index];
+                    const nearest_interval = nearest.intervals[nearest.index];
+                    const farthest = x[nearest_index ^ 1];
+
+                    intersection.intervals.push(new IntegerInterval(nearest.start!, nearest_interval.end));
+                    nearest.index += 1;
+                    nearest.start = undefined;
+                    farthest.start = nearest_interval.end;
+                }
+            } else {
+                // Here nearest between two represent the one with the minor 'start'.
+                const nearest_index = (start_difference < 0) ? 0 : 1;
+                const nearest = x[nearest_index];
+                const nearest_interval = nearest.intervals[nearest.index];
+                const farthest = x[nearest_index ^ 1];
+
+                if (nearest_interval.end <= farthest.start!) {
+                    nearest.difference.intervals.push(new IntegerInterval(nearest.start!, nearest_interval.end));
+                    nearest.index += 1;
+                    nearest.start = undefined;
+                } else {
+                    nearest.difference.intervals.push(new IntegerInterval(nearest.start!, farthest.start!));
+                    nearest.start = farthest.start;
+                }
+            }
+        }
     }
 }
