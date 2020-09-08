@@ -1,4 +1,4 @@
-import { Symbol as GenerzSymbol } from './symbol';
+import { AbstractSymbol } from './abstract-symbol';
 import { Transition } from './transition';
 import { NonDeterministicStatesMap } from './non-deterministic-states-map';
 import { Context } from './context';
@@ -16,7 +16,7 @@ export class State {
         this.transitions.push(...transitions);
     }
 
-    public add_transition(symbol: GenerzSymbol, state: State) {
+    public add_transition(symbol: AbstractSymbol, state: State) {
         this.add_transitions(new Transition(symbol, state));
     }
 
@@ -158,35 +158,66 @@ export class State {
         }
     }
 
-    public is_deterministic(): boolean {
-        const seen_symbol = new Set<number>();
+    /**
+     * The symbols returned in the array by this method are all disjunctive.
+     */
+    public get_transitions_multi_state_map(): {symbol: AbstractSymbol, states: State[]}[] {
+        // Note that all transitions returned by `get_reachable_transitions()` are non-epsilon.
+        const transitions = this.get_reachable_transitions();
+        
+        if (transitions.length === 0)
+            return [];
 
-        for (let transition of this.transitions) {
-            const transition_symbol_code = transition.symbol?.code_point;
+        // All abstract-symbols contained in this variable are disjunctive.
+        const map: {symbol: AbstractSymbol, states: State[]}[] = [];
+        const first_transition = transitions.shift()!;
+        
+        map.push({
+            symbol: first_transition.symbol!,
+            states: [first_transition.state]
+        });
 
-            if (transition_symbol_code === undefined || seen_symbol.has(transition_symbol_code))
-                return false;
+        for (let transition of transitions) {
+            let symbol = transition.symbol!;
 
-            seen_symbol.add(transition_symbol_code);
-        }
+            for (let i = 0, n = map.length; i < n; i += 1) {
+                if (!symbol.represents_something())
+                    break;
 
-        return true;
-    }
+                const entry = map[i];
+                const fragmentation = AbstractSymbol.fragment(entry.symbol, symbol);
 
-    public get_transitions_multi_state_map(): Map<number, State[]> {
-        const map = new Map<number, State[]>();
+                // If symbols have some common code-points.
+                if (fragmentation.shared.represents_something()) {
+                    if (fragmentation.first_exclusive.represents_something()) {
+                        entry.symbol = fragmentation.first_exclusive;
+                        const states = entry.states;
 
-        for (let transition of this.get_reachable_transitions()) {
-            // Note that all transitions returned by `get_reachable_transitions()` are non-epsilon
-            const code_point = transition.symbol!.code_point;
-            let symbol_states = map.get(code_point);
+                        if (states.find(x => x.id === transition.state.id) === undefined)
+                            states.push(transition.state);
+                        
+                        map.push({
+                            symbol: fragmentation.shared,
+                            states
+                        });
+                    } else {
+                        entry.symbol = fragmentation.shared;
 
-            if (symbol_states === undefined) {
-                symbol_states = [];
-                map.set(code_point, symbol_states);
+                        if (entry.states.find(x => x.id === transition.state.id) === undefined)
+                            entry.states.push(transition.state);
+                    }
+                }
+
+                symbol = fragmentation.second_exclusive;
             }
 
-            symbol_states.push(transition.state);
+            // If second-symbol have some exclusive code-points.
+            if (symbol.represents_something()) {
+                map.push({
+                    symbol,
+                    states: [transition.state]
+                });
+            }
         }
 
         return map;
@@ -214,9 +245,9 @@ export class State {
             const map = state.get_transitions_multi_state_map();
             const transitions: Transition[] = [];
 
-            for (let [code_point, states] of map.entries()) {
-                const next_state = states_map.get_or_create(states);
-                transitions.push(new Transition(new GenerzSymbol(code_point), next_state));
+            for (let entry of map) {
+                const next_state = states_map.get_or_create(entry.states);
+                transitions.push(new Transition(entry.symbol, next_state));
 
                 if (!already_queued.has(next_state.id)) {
                     queue.push(next_state);
@@ -247,8 +278,8 @@ export class State {
             if (index === symbols.length)
                 break;
 
-            const code_point = symbols[index].codePointAt(0);
-            const transition = state.transitions.find(x => x.symbol === undefined || x.symbol.code_point === code_point);
+            const code_point = symbols[index].codePointAt(0)!;
+            const transition = state.transitions.find(x => x.symbol === undefined || x.symbol.contains(code_point));
 
             if (transition === undefined)
                 break;

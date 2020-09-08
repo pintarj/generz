@@ -1,8 +1,8 @@
-import {Reader} from './reader';
-import {Context} from './regex/context';
-import {Symbol} from './regex/symbol';
-import {State} from './regex/state';
-import {CodeGenerzError as CodeError} from './error';
+import { Reader } from './reader';
+import { Context } from './regex/context';
+import { SingleSymbol } from './regex/single-symbol';
+import { State } from './regex/state';
+import { CodeGenerzError as CodeError } from './error';
 
 type ParsingResult = {
     initial_state: State,
@@ -43,10 +43,10 @@ export class RegularExpression {
     }
 
     private parse_atom(): ParsingResult|undefined {
-        let symbol: Symbol|undefined = undefined;
+        let symbol: SingleSymbol|undefined = undefined;
 
         if (RegularExpression.is_valid_letter(this.current_code_point))
-            symbol = new Symbol(this.consume_current_code_point());
+            symbol = new SingleSymbol(this.consume_current_code_point());
 
         if (symbol === undefined)
             return undefined;
