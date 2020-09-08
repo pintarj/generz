@@ -162,6 +162,39 @@ describe('brackets', () => {
         const regex = f('[]a');
         expect(regex.match('a')).toBe(false);
     });
+
+    describe('negated', () => {
+        test('single-letters', () => {
+            const regex = f('[^bc]');
+            expect(regex.match('a')).toBe('a');
+            expect(regex.match('b')).toBe(false);
+            expect(regex.match('c')).toBe(false);
+            expect(regex.match('d')).toBe('d');
+            expect(regex.match('6')).toBe('6');
+        });
+
+        test('multi-range', () => {
+            const regex = f('[^b-d4-57]');
+            expect(regex.match('a')).toBe('a');
+            expect(regex.match('b')).toBe(false);
+            expect(regex.match('c')).toBe(false);
+            expect(regex.match('d')).toBe(false);
+            expect(regex.match('e')).toBe('e');
+            expect(regex.match('3')).toBe('3');
+            expect(regex.match('4')).toBe(false);
+            expect(regex.match('5')).toBe(false);
+            expect(regex.match('6')).toBe('6');
+            expect(regex.match('7')).toBe(false);
+            expect(regex.match('8')).toBe('8');
+            expect(regex.match('@')).toBe('@');
+        });
+
+        test('empty', () => {
+            const regex = f('[^]');
+            expect(regex.match('a')).toBe('a');
+            expect(regex.match(']')).toBe(']');
+        });
+    });
 });
 
 test('regular-expression-complex-exclamations', () => {

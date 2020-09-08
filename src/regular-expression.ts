@@ -80,6 +80,13 @@ export class RegularExpression {
     }
 
     private parse_brackets(): ParsingResult {
+        let negated = false;
+
+        if (this.current_code_point === 0x5E) { // ^
+            this.consume_current_code_point();
+            negated = true;
+        }
+
         let symbol: AbstractSymbol = new MultiSymbol([]);
 
         while (true) {
@@ -90,6 +97,9 @@ export class RegularExpression {
 
             symbol = AbstractSymbol.merge(symbol, s);
         }
+
+        if (negated)
+            symbol = AbstractSymbol.negate(symbol);
 
         const initial_state = this.context.create_new_state();
         const final_state = this.context.create_new_state();

@@ -40,4 +40,8 @@ export class AbstractSymbol {
     public static merge(first: AbstractSymbol, second: AbstractSymbol): AbstractSymbol {
         return new AbstractSymbol(IntegerIntervalsSet.calculate_union(first.set, second.set));
     }
+
+    public static negate(symbol: AbstractSymbol): AbstractSymbol {
+        return new AbstractSymbol(IntegerIntervalsSet.calculate_negation(symbol.set));
+    }
 }
