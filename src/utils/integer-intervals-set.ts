@@ -163,6 +163,22 @@ export class IntegerIntervalsSet {
 
         return numbers;
     }
+
+    /**
+     * Calculates the union of two specified sets.
+     * @param left The left specified set.
+     * @param right The right specified set.
+     * @returns The calculated union.
+     */
+    public static calculate_union(left: IntegerIntervalsSet, right: IntegerIntervalsSet): IntegerIntervalsSet {
+        const set = new IntegerIntervalsSet();
+        set.intervals = [...left.intervals];
+
+        for (let interval of right.intervals)
+            set.add(interval);
+
+        return set;
+    }
     
     /**
      * Calculates the differences (left and right) and intersection of two specified sets.

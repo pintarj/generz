@@ -432,3 +432,29 @@ describe('to_array', () => {
         expect(set.to_array()).toEqual([-64, -63, -2, -1, 0, 1]);
     });
 });
+
+describe('union', () => {
+    test('simple', () => {
+        const set_0 = new IntegerIntervalsSet();
+        set_0.add(new IntegerInterval(10, 13));
+        set_0.add(new IntegerInterval(15, 17));
+
+        const set_1 = new IntegerIntervalsSet();
+        set_1.add(new IntegerInterval(11, 15));
+        set_1.add(new IntegerInterval(100, 101));
+
+        const union_0 = IntegerIntervalsSet.calculate_union(set_0, set_1).to_array();
+        const union_1 = IntegerIntervalsSet.calculate_union(set_1, set_0).to_array();
+
+        expect(union_0).toEqual(union_1);
+        expect(union_0).toEqual([10, 11, 12, 13, 14, 15, 16, 100]);
+    });
+
+    test('same-set', () => {
+        const set = new IntegerIntervalsSet();
+        set.add(new IntegerInterval(10, 13));
+        set.add(new IntegerInterval(15, 17));
+        const union = IntegerIntervalsSet.calculate_union(set, set).to_array();
+        expect(union).toEqual([10, 11, 12, 15, 16]);
+    });
+});
