@@ -458,3 +458,58 @@ describe('union', () => {
         expect(union).toEqual([10, 11, 12, 15, 16]);
     });
 });
+
+describe('negation', () => {
+    test('empty', () => {
+        const set = new IntegerIntervalsSet();
+        const negation = IntegerIntervalsSet.calculate_negation(set) as any;
+        
+        expect(negation.intervals).toMatchObject([
+            {start: Number.MIN_SAFE_INTEGER, end: Number.MAX_SAFE_INTEGER}
+        ]);
+    });
+
+    test('full', () => {
+        const set = new IntegerIntervalsSet();
+        set.add(new IntegerInterval(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER));
+        const negation = IntegerIntervalsSet.calculate_negation(set);
+        expect(negation.capacity).toEqual(0);
+    });
+
+    test('single-interval', () => {
+        const set = new IntegerIntervalsSet();
+        set.add(new IntegerInterval(2, 5));
+        const negation = IntegerIntervalsSet.calculate_negation(set) as any;
+        expect(negation.intervals).toMatchObject([
+            {start: Number.MIN_SAFE_INTEGER, end: 2},
+            {start: 5, end: Number.MAX_SAFE_INTEGER},
+        ]);
+    });
+
+    test('multiple-interval', () => {
+        const set = new IntegerIntervalsSet();
+        set.add(new IntegerInterval(-100, 0));
+        set.add(new IntegerInterval(2, 5));
+        set.add(new IntegerInterval(10, 15));
+        const negation = IntegerIntervalsSet.calculate_negation(set) as any;
+        expect(negation.intervals).toMatchObject([
+            {start: Number.MIN_SAFE_INTEGER, end: -100},
+            {start: 0, end: 2},
+            {start: 5, end: 10},
+            {start: 15, end: Number.MAX_SAFE_INTEGER},
+        ]);
+    });
+
+    test('double-operation', () => {
+        const set = new IntegerIntervalsSet();
+        set.add(new IntegerInterval(-100, 0));
+        set.add(new IntegerInterval(2, 5));
+        set.add(new IntegerInterval(10, 15));
+        const negation = IntegerIntervalsSet.calculate_negation(IntegerIntervalsSet.calculate_negation(set)) as any;
+        expect(negation.intervals).toMatchObject([
+            {start: -100, end: 0},
+            {start: 2, end: 5},
+            {start: 10, end: 15}
+        ]);
+    });
+});

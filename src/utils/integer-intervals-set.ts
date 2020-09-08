@@ -179,6 +179,28 @@ export class IntegerIntervalsSet {
 
         return set;
     }
+
+    /**
+     * Calculates the negation of the specified set.
+     * @param set The specified set.
+     * @returns The calculated negation.
+     */
+    public static calculate_negation(set: IntegerIntervalsSet): IntegerIntervalsSet {
+        const negation = new IntegerIntervalsSet();
+        let start = Number.MIN_SAFE_INTEGER;
+
+        for (let interval of set.intervals) {
+            if (start < interval.start)
+                negation.add(new IntegerInterval(start, interval.start));
+
+            start = interval.end;
+        }
+
+        if (start < Number.MAX_SAFE_INTEGER)
+            negation.add(new IntegerInterval(start, Number.MAX_SAFE_INTEGER));
+
+        return negation;
+    }
     
     /**
      * Calculates the differences (left and right) and intersection of two specified sets.
