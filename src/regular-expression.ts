@@ -3,6 +3,9 @@ import { Context } from './regex/context';
 import { SingleSymbol } from './regex/single-symbol';
 import { State } from './regex/state';
 import { CodeGenerzError as CodeError } from './error';
+import { MultiSymbol } from './regex/multi-symbol';
+import { IntegerInterval } from './utils/integer-intervals-set';
+import { AbstractSymbol } from './regex/abstract-symbol';
 
 type ParsingResult = {
     initial_state: State,
@@ -42,14 +45,51 @@ export class RegularExpression {
             || code_point == 0x5F;                      // _
     }
 
+    private parse_symbol(): AbstractSymbol|undefined {
+        if (RegularExpression.is_valid_letter(this.current_code_point)) {
+            const start = this.consume_current_code_point();
+
+            if (this.current_code_point === 0x2D) { // -
+                this.consume_current_code_point();
+                const end = this.consume_current_code_point();
+
+                if (!RegularExpression.is_valid_letter(end)) {
+                    // TODO insert the correct file name
+                    CodeError.throw('<unknown>', `Expecting last character of interval, but \`${end}\` found.`);
+                }
+
+                return new MultiSymbol([new IntegerInterval(start, end + 1)]);
+            } else {
+                return new SingleSymbol(start);
+            }
+        } else {
+            return undefined;
+        }
+    }
+
     private parse_atom(): ParsingResult|undefined {
-        let symbol: SingleSymbol|undefined = undefined;
-
-        if (RegularExpression.is_valid_letter(this.current_code_point))
-            symbol = new SingleSymbol(this.consume_current_code_point());
-
+        const symbol = this.parse_symbol();
+        
         if (symbol === undefined)
             return undefined;
+
+        const initial_state = this.context.create_new_state();
+        const final_state = this.context.create_new_state();
+        initial_state.add_transition(symbol, final_state);
+        return {initial_state, final_state};
+    }
+
+    private parse_brackets(): ParsingResult {
+        let symbol: AbstractSymbol = new MultiSymbol([]);
+
+        while (true) {
+            const s = this.parse_symbol();
+            
+            if (s === undefined)
+                break;
+
+            symbol = AbstractSymbol.merge(symbol, s);
+        }
 
         const initial_state = this.context.create_new_state();
         const final_state = this.context.create_new_state();
@@ -62,6 +102,13 @@ export class RegularExpression {
             this.consume_current_code_point();
             const sub_machine = this.parse_alternation();
             this.expect_current_code_point_then_consume(0x29);
+            return sub_machine;
+        }
+
+        if (this.current_code_point === 0x5B) { // [
+            this.consume_current_code_point();
+            const sub_machine = this.parse_brackets();
+            this.expect_current_code_point_then_consume(0x5D);
             return sub_machine;
         }
 

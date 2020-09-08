@@ -36,4 +36,8 @@ export class AbstractSymbol {
             shared
         };
     }
+
+    public static merge(first: AbstractSymbol, second: AbstractSymbol): AbstractSymbol {
+        return new AbstractSymbol(IntegerIntervalsSet.calculate_union(first.set, second.set));
+    }
 }
