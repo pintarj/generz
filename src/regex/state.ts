@@ -191,7 +191,7 @@ export class State {
                 if (fragmentation.shared.represents_something()) {
                     if (fragmentation.first_exclusive.represents_something()) {
                         entry.symbol = fragmentation.first_exclusive;
-                        const states = entry.states;
+                        const states = [...entry.states];
 
                         if (states.find(x => x.id === transition.state.id) === undefined)
                             states.push(transition.state);

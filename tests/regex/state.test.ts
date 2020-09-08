@@ -1,7 +1,9 @@
 import { State } from '@dist/regex/state';
 import { SingleSymbol } from '@dist/regex/single-symbol';
+import { MultiSymbol } from '@dist/regex/multi-symbol';
 import { Transition } from '@dist/regex/transition';
 import { Context } from '@dist/regex/context';
+import { IntegerInterval } from '@dist/utils/integer-intervals-set';
 
 test('state-empty', () => {
     const s = new State(0);
@@ -388,7 +390,7 @@ test('state-is-deterministic-true', () => {
 */
 
 describe('get_transitions_multi_state_map', () => {
-    test('case-0', () => {
+    test('no-shared', () => {
         const context = new Context();
         const states = [
             context.create_new_state(),
@@ -413,7 +415,124 @@ describe('get_transitions_multi_state_map', () => {
         expect(map.find(x => x.symbol.contains_only(200))?.states.map(x => x.id).sort()).toEqual([4]);
     });
 
-    // TODO write tests for multi-symbols
+    test('all-present', () => {
+        const context = new Context();
+        const states = [
+            context.create_new_state(),
+            context.create_new_state(),
+            context.create_new_state()
+        ];
+        const symbols = [
+            new MultiSymbol([
+                new IntegerInterval(3, 5)
+            ]),
+            new MultiSymbol([
+                new IntegerInterval(2, 4)
+            ])
+        ];
+
+        states[0].add_transition(symbols[0], states[1]);
+        states[0].add_transition(symbols[1], states[2]);
+        const map = states[0].get_transitions_multi_state_map();
+        expect(map).toHaveLength(3);
+        expect(map.filter(x => x.symbol.contains_only(2))).toHaveLength(1);
+        expect(map.filter(x => x.symbol.contains_only(3))).toHaveLength(1);
+        expect(map.filter(x => x.symbol.contains_only(4))).toHaveLength(1);
+        expect(map.find(x => x.symbol.contains_only(2))?.states.map(x => x.id).sort()).toEqual([2]);
+        expect(map.find(x => x.symbol.contains_only(3))?.states.map(x => x.id).sort()).toEqual([1, 2]);
+        expect(map.find(x => x.symbol.contains_only(4))?.states.map(x => x.id).sort()).toEqual([1]);
+    });
+
+    test('no-first-exclusive', () => {
+        const context = new Context();
+        const states = [
+            context.create_new_state(),
+            context.create_new_state(),
+            context.create_new_state()
+        ];
+        const symbols = [
+            new MultiSymbol([
+                new IntegerInterval(3, 4)
+            ]),
+            new MultiSymbol([
+                new IntegerInterval(2, 4)
+            ])
+        ];
+
+        states[0].add_transition(symbols[0], states[1]);
+        states[0].add_transition(symbols[1], states[2]);
+        const map = states[0].get_transitions_multi_state_map();
+        expect(map).toHaveLength(2);
+        expect(map.filter(x => x.symbol.contains_only(2))).toHaveLength(1);
+        expect(map.filter(x => x.symbol.contains_only(3))).toHaveLength(1);
+        expect(map.find(x => x.symbol.contains_only(2))?.states.map(x => x.id).sort()).toEqual([2]);
+        expect(map.find(x => x.symbol.contains_only(3))?.states.map(x => x.id).sort()).toEqual([1, 2]);
+    });
+
+    test('no-second-exclusive', () => {
+        const context = new Context();
+        const states = [
+            context.create_new_state(),
+            context.create_new_state(),
+            context.create_new_state()
+        ];
+        const symbols = [
+            new MultiSymbol([
+                new IntegerInterval(3, 5)
+            ]),
+            new MultiSymbol([
+                new IntegerInterval(3, 4)
+            ])
+        ];
+
+        states[0].add_transition(symbols[0], states[1]);
+        states[0].add_transition(symbols[1], states[2]);
+        const map = states[0].get_transitions_multi_state_map();
+        expect(map).toHaveLength(2);
+        expect(map.filter(x => x.symbol.contains_only(3))).toHaveLength(1);
+        expect(map.filter(x => x.symbol.contains_only(4))).toHaveLength(1);
+        expect(map.find(x => x.symbol.contains_only(3))?.states.map(x => x.id).sort()).toEqual([1, 2]);
+        expect(map.find(x => x.symbol.contains_only(4))?.states.map(x => x.id).sort()).toEqual([1]);
+    });
+
+    test('multiple-disjunctive', () => {
+        const context = new Context();
+        const states = [
+            context.create_new_state(),
+            context.create_new_state(),
+            context.create_new_state(),
+            context.create_new_state()
+        ];
+        const symbols = [
+            new MultiSymbol([
+                new IntegerInterval(2, 4)
+            ]),
+            new MultiSymbol([
+                new IntegerInterval(3, 5)
+            ]),
+            new MultiSymbol([
+                new IntegerInterval(4, 6)
+            ]),
+            new SingleSymbol(100)
+        ];
+
+        states[0].add_transition(symbols[0], states[1]);
+        states[0].add_transition(symbols[1], states[3]);
+        states[0].add_transition(symbols[2], states[0]);
+        states[0].add_transition(symbols[3], states[2]);
+        const map = states[0].get_transitions_multi_state_map();
+        expect(map).toHaveLength(5);
+        expect(map.filter(x => x.symbol.contains_only(2))).toHaveLength(1);
+        expect(map.filter(x => x.symbol.contains_only(3))).toHaveLength(1);
+        expect(map.filter(x => x.symbol.contains_only(4))).toHaveLength(1);
+        expect(map.filter(x => x.symbol.contains_only(5))).toHaveLength(1);
+        expect(map.filter(x => x.symbol.contains_only(100))).toHaveLength(1);
+        expect(map.find(x => x.symbol.contains_only(2))?.states.map(x => x.id).sort()).toEqual([1]);
+        expect(map.find(x => x.symbol.contains_only(3))?.states.map(x => x.id).sort()).toEqual([1, 3]);
+        expect(map.find(x => x.symbol.contains_only(4))?.states.map(x => x.id).sort()).toEqual([0, 3]);
+        expect(map.find(x => x.symbol.contains_only(5))?.states.map(x => x.id).sort()).toEqual([0]);
+        expect(map.find(x => x.symbol.contains_only(100))?.states.map(x => x.id).sort()).toEqual([2]);
+    });
 });
 
 test('state-remove-non-determinism-no-infinite-loop', () => {
