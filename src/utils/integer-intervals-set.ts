@@ -148,6 +148,21 @@ export class IntegerIntervalsSet {
         const result = this.find_number_interval(x);
         return result.present;
     }
+
+    /**
+     * Returns all the numbers contained in the set.
+     * @returns All the numbers in the set.
+     */
+    public to_array(): number[] {
+        const numbers: number[] = [];
+
+        for (let interval of this.intervals) {
+            for (let i = interval.start; i < interval.end; i += 1)
+                numbers.push(i);
+        }
+
+        return numbers;
+    }
     
     /**
      * Calculates the differences (left and right) and intersection of two specified sets.

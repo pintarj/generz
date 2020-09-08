@@ -409,3 +409,26 @@ describe('interval-set-calculate_differences_and_intersection', () => {
         expect(intersection_intervals[5].end).toEqual(23);
     });
 });
+
+describe('to_array', () => {
+    test('single-interval', () => {
+        const set = new IntegerIntervalsSet();
+        set.add(new IntegerInterval(10, 13));
+        expect(set.to_array()).toEqual([10, 11, 12]);
+    });
+
+    test('multiple-interval', () => {
+        const set = new IntegerIntervalsSet();
+        set.add(new IntegerInterval(4, 8));
+        set.add(new IntegerInterval(15, 16));
+        set.add(new IntegerInterval(34, 38));
+        expect(set.to_array()).toEqual([4, 5, 6, 7, 15, 34, 35, 36, 37]);
+    });
+
+    test('negative-intervals', () => {
+        const set = new IntegerIntervalsSet();
+        set.add(new IntegerInterval(-64, -62));
+        set.add(new IntegerInterval(-2, 2));
+        expect(set.to_array()).toEqual([-64, -63, -2, -1, 0, 1]);
+    });
+});
