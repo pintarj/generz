@@ -744,3 +744,35 @@ test('state-match-ab?c', () => {
     expect(s0.match('ab')).toBe(false);
     expect(s0.match('a')).toBe(false);
 });
+
+describe('get_transitively_reachable_final_states', () => {
+    test('chain', () => {
+        const context = new Context();
+        const s0 = context.create_new_state();
+        const s1 = context.create_new_state();
+        const s2 = context.create_new_state();
+        const s3 = context.create_new_state();
+        s0.add_epsilon_transition(s1);
+        s1.add_transition(new SingleSymbol('k'.charCodeAt(0)), s2);
+        s2.add_transition(new SingleSymbol('o'.charCodeAt(0)), s3);
+        s3.is_final = true;
+        const final_states = s0.get_transitively_reachable_final_states();
+        expect(final_states).toHaveLength(1);
+        expect(final_states[0].id).toBe(3);
+    });
+
+    test('double-final', () => {
+        const context = new Context();
+        const s0 = context.create_new_state();
+        const s1 = context.create_new_state();
+        const s2 = context.create_new_state();
+        s0.add_transition(new SingleSymbol('l'.charCodeAt(0)), s1);
+        s0.add_transition(new SingleSymbol('o'.charCodeAt(0)), s2);
+        s1.is_final = true;
+        s2.is_final = true;
+        const final_states = s0.get_transitively_reachable_final_states().sort(x => x.id);
+        expect(final_states).toHaveLength(2);
+        expect(final_states[0].id).toBe(1);
+        expect(final_states[1].id).toBe(2);
+    });
+});

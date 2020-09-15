@@ -101,6 +101,10 @@ export class State {
         return Array.from(this.get_transitively_reachable_states_iterable());
     }
 
+    public get_transitively_reachable_final_states(): State[] {
+        return this.get_transitively_reachable_states().filter(state => state.is_final);
+    }
+
     public expand_final_through_epsilon_transitions() {
         if (!this.is_final)
             return;
