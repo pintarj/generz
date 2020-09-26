@@ -770,7 +770,7 @@ describe('get_transitively_reachable_final_states', () => {
         s0.add_transition(new SingleSymbol('o'.charCodeAt(0)), s2);
         s1.is_final = true;
         s2.is_final = true;
-        const final_states = s0.get_transitively_reachable_final_states().sort(x => x.id);
+        const final_states = s0.get_transitively_reachable_final_states().sort((a, b) => a.id - b.id);
         expect(final_states).toHaveLength(2);
         expect(final_states[0].id).toBe(1);
         expect(final_states[1].id).toBe(2);
