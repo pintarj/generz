@@ -5,7 +5,7 @@ module.exports = {
     testRegex: 'tests\\/.+\\.test\\.ts$',
     globals: {
         'ts-jest': {
-            tsConfig: 'tests/tsconfig.json'
+            tsconfig: 'tests/tsconfig.json'
         }
     },
     moduleNameMapper: {
