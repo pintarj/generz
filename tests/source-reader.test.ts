@@ -1,8 +1,8 @@
-import {StringReader} from '@dist/reader';
-import {source} from '@dist/source/reader';
+import { StringReader } from '@dist/reader';
+import { SourceReader } from '@dist/source/reader';
 
 test('content', () => {
-    const reader = new source.Reader(new StringReader('dratini'));
+    const reader = new SourceReader(new StringReader('dratini'));
     expect(reader.read()).toBe('d');
     expect(reader.read()).toBe('r');
     expect(reader.read()).toBe('a');
@@ -15,7 +15,7 @@ test('content', () => {
 });
 
 test('position', () => {
-    const reader = new source.Reader(new StringReader('a\nb\n\ncde\n'));
+    const reader = new SourceReader(new StringReader('a\nb\n\ncde\n'));
     expect(reader.read()).toBe('a');
     expect(reader.get_point()).toMatchObject({line: 1, column: 1});
     expect(reader.read()).toBe('\n');
@@ -39,7 +39,7 @@ test('position', () => {
 });
 
 test('position-no-newline', () => {
-    const reader = new source.Reader(new StringReader('mew'));
+    const reader = new SourceReader(new StringReader('mew'));
     expect(reader.read()).toBe('m');
     expect(reader.get_point()).toMatchObject({line: 1, column: 1});
     expect(reader.read()).toBe('e');
@@ -51,7 +51,7 @@ test('position-no-newline', () => {
 });
 
 test('position-empty-input', () => {
-    const reader = new source.Reader(new StringReader(''));
+    const reader = new SourceReader(new StringReader(''));
     expect(reader.read()).toBe('');
     expect(reader.get_point()).toMatchObject({line: 1, column: 1});
     expect(reader.read()).toBe('');
@@ -59,7 +59,7 @@ test('position-empty-input', () => {
 });
 
 test('revoke', () => {
-    const reader = new source.Reader(new StringReader('x'));
+    const reader = new SourceReader(new StringReader('x'));
     expect(reader.read()).toBe('x');
     expect(reader.get_point()).toMatchObject({line: 1, column: 1});
     reader.revoke();
@@ -70,7 +70,7 @@ test('revoke', () => {
 });
 
 test('revoke-newline', () => {
-    const reader = new source.Reader(new StringReader('x\ny'));
+    const reader = new SourceReader(new StringReader('x\ny'));
     expect(reader.read()).toBe('x');
     expect(reader.get_point()).toMatchObject({line: 1, column: 1});
     expect(reader.read()).toBe('\n');
@@ -88,7 +88,7 @@ test('revoke-newline', () => {
 });
 
 test('revoke-eof', () => {
-    const reader = new source.Reader(new StringReader('x'));
+    const reader = new SourceReader(new StringReader('x'));
     expect(reader.read()).toBe('x');
     expect(reader.get_point()).toMatchObject({line: 1, column: 1});
     expect(reader.read()).toBe('');

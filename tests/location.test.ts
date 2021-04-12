@@ -1,13 +1,13 @@
-import {source} from '@dist/source/location';
+import { Point, Location, Locatable } from '@dist/source/location';
 
 test('location-point', () => {
-    const point = new source.Point(4, 20);
+    const point = new Point(4, 20);
     expect(point.line).toBe(4);
     expect(point.column).toBe(20);
 });
 
 test('location-point-locatable', () => {
-    const point = new source.Point(4, 20);
+    const point = new Point(4, 20);
     const location = point.get_location();
     expect(location.start.line).toBe(4);
     expect(location.start.column).toBe(20);
@@ -16,9 +16,9 @@ test('location-point-locatable', () => {
 });
 
 test('location-location', () => {
-    const p0 = new source.Point(4, 20);
-    const p1 = new source.Point(5, 40);
-    const location = new source.Location(p0, p1);
+    const p0 = new Point(4, 20);
+    const p1 = new Point(5, 40);
+    const location = new Location(p0, p1);
     expect(location.start.line).toBe(4);
     expect(location.start.column).toBe(20);
     expect(location.end.line).toBe(5);
@@ -26,9 +26,9 @@ test('location-location', () => {
 });
 
 test('location-location-locatable', () => {
-    const p0 = new source.Point(4, 20);
-    const p1 = new source.Point(5, 40);
-    const locatable: source.Locatable = new source.Location(p0, p1);
+    const p0 = new Point(4, 20);
+    const p1 = new Point(5, 40);
+    const locatable: Locatable = new Location(p0, p1);
     const location = locatable.get_location();
     expect(location.start.line).toBe(4);
     expect(location.start.column).toBe(20);
