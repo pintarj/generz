@@ -1,22 +1,29 @@
-import { Reader } from './reader';
 import { Context } from './regex/context';
 import { SingleSymbol } from './regex/single-symbol';
 import { State } from './regex/state';
-import { CodeGenerzError as CodeError } from './error';
+import { CodeError } from './error';
 import { MultiSymbol } from './regex/multi-symbol';
 import { IntegerInterval } from './utils/integer-intervals-set';
 import { AbstractSymbol } from './regex/abstract-symbol';
+import { SourceReader } from './source/source-reader';
+import { Reader } from './reader';
 
 type ParsingResult = {
     initial_state: State,
     final_state: State
 };
 
+function code_point_to_printable(code_point: number): string {
+    return Number.isNaN(code_point) ? 'EOF' : String.fromCodePoint(code_point);
+}
+
 export class RegularExpression {
     private current_code_point: number;
     private readonly context: Context;
+    private readonly reader: SourceReader;
 
-    public constructor(private readonly reader: Reader) {
+    public constructor(reader: Reader|SourceReader) {
+        this.reader = reader instanceof SourceReader ? reader : new SourceReader(reader);
         this.current_code_point = this.reader.read().codePointAt(0) || NaN;
         this.context = new Context();
     }
@@ -29,10 +36,9 @@ export class RegularExpression {
 
     private expect_current_code_point_then_consume(expected_code_point: number) {
         if (this.current_code_point !== expected_code_point) {
-            const current = Number.isNaN(this.current_code_point) ? 'EOF' : String.fromCodePoint(this.current_code_point);
-            const expected = Number.isNaN(expected_code_point) ? 'EOF' : String.fromCodePoint(expected_code_point);
-            // TODO insert the correct file name
-            CodeError.throw('<unknown>', `Expected \`${expected}\` character, but \`${current}\` found.`);
+            const current = code_point_to_printable(this.current_code_point);
+            const expected = code_point_to_printable(expected_code_point);
+            throw new CodeError(this.reader.file, this.reader.get_point(), `Expected \`${expected}\` character, but \`${current}\` found.`);
         }
 
         this.consume_current_code_point();
@@ -54,8 +60,9 @@ export class RegularExpression {
                 const end = this.consume_current_code_point();
 
                 if (!RegularExpression.is_valid_letter(end)) {
-                    // TODO insert the correct file name
-                    CodeError.throw('<unknown>', `Expecting last character of interval, but \`${end}\` found.`);
+                    this.reader.revoke();
+                    const found = code_point_to_printable(end);
+                    throw new CodeError(this.reader.file, this.reader.get_point(), `Expecting last character of interval, but \`${found}\` found.`);
                 }
 
                 return new MultiSymbol([new IntegerInterval(start, end + 1)]);
