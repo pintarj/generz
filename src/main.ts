@@ -2,20 +2,20 @@
 
 import Args from './args';
 import Pipeline from './pipeline';
-import {ArgsGenerzError, CodeGenerzError, InternalGenerzError} from './error';
+import { ArgsError, CodeError, InternalError } from './error';
 
 try {
     const args     = Args.parse();
     const pipeline = new Pipeline(args);
     pipeline.run();
 } catch (error) {
-    if (error instanceof ArgsGenerzError) {
+    if (error instanceof ArgsError) {
         console.log(error.message);
         process.exit(1);
-    } else if (error instanceof CodeGenerzError) {
+    } else if (error instanceof CodeError) {
         console.log(error.message);
         process.exit(2);
-    } else if (error instanceof InternalGenerzError) {
+    } else if (error instanceof InternalError) {
         console.error(error.message);
         process.exit(3);
     } else {
