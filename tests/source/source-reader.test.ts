@@ -1,5 +1,10 @@
 import { StringReader } from '@dist/reader';
-import { SourceReader } from '@dist/source/reader';
+import { SourceReader } from '@dist/source/source-reader';
+
+test('file', () => {
+    expect((new SourceReader(new StringReader(''))).file).toBe('<unknown>');
+    expect((new SourceReader(new StringReader(''), {file: 'main.cxx'})).file).toBe('main.cxx');
+});
 
 test('content', () => {
     const reader = new SourceReader(new StringReader('dratini'));

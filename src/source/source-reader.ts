@@ -2,16 +2,18 @@ import { Reader } from '../reader';
 import { Point } from './location';
 
 export class SourceReader implements Reader {
+    public readonly file: string; 
     private line: number;
     private column: number;
     private current: string;
     private cache: string|null;
 
-    public constructor(private reader: Reader) {
+    public constructor(private reader: Reader, options?: {file?: string}) {
         this.line    = 1;
         this.column  = 0;
         this.current = '\a';
         this.cache   = null;
+        this.file    = options?.file || '<unknown>';
     }
 
     public read(): string {
