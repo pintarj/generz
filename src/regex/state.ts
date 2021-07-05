@@ -6,6 +6,7 @@ import { Context } from './context';
 export class State {
     public readonly transitions: Transition[] = [];
     public is_final: boolean = false;
+    public machine_id: number|undefined = undefined;
 
     constructor(public readonly id: number, options?: {is_final?: boolean}) {
         options = options || {};
@@ -267,17 +268,23 @@ export class State {
     /**
      * Method tries to match the specified input stream with the current state.
      * The string it's matched from it's first character.
+     * @param input The input string to consume.
+     * @param options.machine_id If specified, then the method will ensure, that the input will
+     *     be matched exactly by the machine with the specified id.
      * @returns False if input string was not matched, otherwise the matched prefix of input string is returned.
      * */
-    public match(input: string): false|string {
+    public match(input: string, options?: {machine_id?: number|undefined}): false|string {
         const symbols = Array.from(input);
         let last_match: number|undefined = undefined;
+        let last_match_state: State|undefined = undefined;
         let index: number = 0;
         let state: State = this;
 
         while (true) {
-            if (state.is_final)
+            if (state.is_final) {
                 last_match = index;
+                last_match_state = state;
+            }
 
             if (index === symbols.length)
                 break;
@@ -292,6 +299,14 @@ export class State {
             index += 1;
         }
 
-        return last_match === undefined ? false : symbols.slice(0, last_match).join('');
+        if (last_match === undefined)
+            return false;
+
+        if (options?.machine_id !== undefined) {
+            if (last_match_state!.machine_id !== options.machine_id)
+                return false;
+        }
+
+        return symbols.slice(0, last_match).join('');
     }
 }

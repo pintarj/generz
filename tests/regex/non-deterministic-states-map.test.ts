@@ -152,3 +152,76 @@ test('new-state-transitions-final', () => {
     expect(map.get_or_create([states[1], states[2]]).is_final).toBe(true);
     expect(map.get_or_create([states[2], states[3]]).is_final).toBe(true);
 });
+
+describe('machine-id', () => {
+    test('no-id', () => {
+        const context = new Context();
+        const states = [
+            context.create_new_state(),
+            context.create_new_state()
+        ];
+        states[0].is_final = true;
+        const map = new NonDeterministicStatesMap(context, states);
+        expect(map.get_or_create(states).machine_id).toBe(undefined);
+    });
+
+    test('no-final', () => {
+        const context = new Context();
+        const states = [
+            context.create_new_state(),
+            context.create_new_state()
+        ];
+        states[0].machine_id = 99;
+        const map = new NonDeterministicStatesMap(context, states);
+        expect(map.get_or_create(states).machine_id).toBe(undefined);
+    });
+
+    test('single', () => {
+        const context = new Context();
+        const states = [
+            context.create_new_state(),
+            context.create_new_state()
+        ];
+        states[0].is_final = true;
+        states[0].machine_id = 33;
+        const map = new NonDeterministicStatesMap(context, states);
+        expect(map.get_or_create(states).machine_id).toBe(33);
+    });
+
+    test('multiple', () => {
+        const context = new Context();
+        const states = [
+            context.create_new_state(),
+            context.create_new_state()
+        ];
+        states[0].is_final = true;
+        states[0].machine_id = 366;
+        states[1].is_final = true;
+        states[1].machine_id = 385;
+        const map = new NonDeterministicStatesMap(context, states);
+        expect(map.get_or_create(states).machine_id).toBe(366);
+    });
+
+    test('complex', () => {
+        const context = new Context();
+        const states = [
+            context.create_new_state(),
+            context.create_new_state(),
+            context.create_new_state(),
+            context.create_new_state(),
+            context.create_new_state()
+        ];
+        states[0].is_final = false;
+        states[0].machine_id = undefined;
+        states[1].is_final = true;
+        states[1].machine_id = undefined;
+        states[2].is_final = false;
+        states[2].machine_id = 10;
+        states[3].is_final = true;
+        states[3].machine_id = 20;
+        states[4].is_final = true;
+        states[4].machine_id = 100;
+        const map = new NonDeterministicStatesMap(context, states);
+        expect(map.get_or_create(states).machine_id).toBe(20);
+    });
+});
