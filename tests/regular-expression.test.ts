@@ -242,6 +242,44 @@ describe('meta-characters', () => {
         expect(regex.match('z')).toEqual('z');
         expect(regex.match('{')).toEqual(false);
     });
+
+    test('\\s', () => {
+        const regex = f('\\s');
+        expect(regex.match(' ')).toEqual(' ');
+        expect(regex.match('\t')).toEqual('\t');
+        expect(regex.match('\n')).toEqual('\n');
+        expect(regex.match('\v')).toEqual('\v');
+        expect(regex.match('\f')).toEqual('\f');
+        expect(regex.match('\r')).toEqual('\r');
+        expect(regex.match('a')).toEqual(false);
+        expect(regex.match(':')).toEqual(false);
+        expect(regex.match('8')).toEqual(false);
+    });
+
+    test('\\t', () => {
+        const regex = f('\\t');
+        expect(regex.match('\t')).toEqual('\t');
+    });
+
+    test('\\n', () => {
+        const regex = f('\\n');
+        expect(regex.match('\n')).toEqual('\n');
+    });
+
+    test('\\v', () => {
+        const regex = f('\\v');
+        expect(regex.match('\v')).toEqual('\v');
+    });
+
+    test('\\f', () => {
+        const regex = f('\\f');
+        expect(regex.match('\f')).toEqual('\f');
+    });
+
+    test('\\r', () => {
+        const regex = f('\\r');
+        expect(regex.match('\r')).toEqual('\r');
+    });
 });
 
 describe('merge', () => {

@@ -27,6 +27,19 @@ const META_ALPHANUMERIC_UNDERSCORE_SYMBOL = new MultiSymbol([
     LOWERCASE_LETTERS_INTERVAL,
     0x5F /* _ */
 ]);
+const META_WHITESPACE_SYMBOL = new MultiSymbol([
+    0x20, /* space */
+    0x09, /* horizontal tab */
+    0x0A, /* line feed */
+    0x0B, /* vertical tab */
+    0x0C, /* form feed */
+    0x0D, /* carriage return */
+]);
+const META_HORIZONTAL_TAB = new SingleSymbol(0x09);
+const META_LINE_FEED = new SingleSymbol(0x0A);
+const META_VERTICAL_TAB = new SingleSymbol(0x0B);
+const META_FORM_FEED = new SingleSymbol(0x0C);
+const META_CARRIAGE_RETURN = new SingleSymbol(0x0D);
 
 export class RegularExpression {
     private current_code_point: number;
@@ -75,6 +88,30 @@ export class RegularExpression {
 
                 case 0x77: { // w
                     return META_ALPHANUMERIC_UNDERSCORE_SYMBOL;
+                }
+
+                case 0x73: { // s
+                    return META_WHITESPACE_SYMBOL;
+                }
+
+                case 0x74: { // t
+                    return META_HORIZONTAL_TAB;
+                }
+
+                case 0x6E: { // n
+                    return META_LINE_FEED;
+                }
+
+                case 0x76: { // v
+                    return META_VERTICAL_TAB;
+                }
+
+                case 0x66: { // f
+                    return META_FORM_FEED;
+                }
+
+                case 0x72: { // r
+                    return META_CARRIAGE_RETURN;
                 }
 
                 default:
