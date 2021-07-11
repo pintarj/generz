@@ -201,8 +201,19 @@ describe('brackets', () => {
 });
 
 describe('meta-characters', () => {
-    test('unknown', () => {
-        expect(() => f('\\@')).toThrowError('Unknown meta-character: \\@');
+    test('escaping-keywork-characters', () => {
+        expect(f('\\.').match('.')).toEqual('.');
+        expect(f('\\?').match('?')).toEqual('?');
+        expect(f('\\[').match('[')).toEqual('[');
+        expect(f('\\{').match('{')).toEqual('{');
+        expect(f('\\+').match('+')).toEqual('+');
+        expect(f('\\*').match('*')).toEqual('*');
+    });
+
+    test('escaping-random-characters', () => {
+        expect(f('\\y').match('y')).toEqual('y');
+        expect(f('\\:').match(':')).toEqual(':');
+        expect(f('\\@').match('@')).toEqual('@');
     });
 
     test('\\\\', () => {

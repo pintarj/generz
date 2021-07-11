@@ -78,10 +78,6 @@ export class RegularExpression {
             const character = this.consume_current_code_point();
 
             switch (character) {
-                case 0x5C: { // \
-                    return new SingleSymbol(character);
-                }
-
                 case 0x64: { // d
                     return META_DIGITS_SYMBOL;
                 }
@@ -115,7 +111,7 @@ export class RegularExpression {
                 }
 
                 default:
-                    throw new CodeError(this.reader.file, this.reader.get_point(), `Unknown meta-character: \\${code_point_to_printable(character)}`);
+                    return new SingleSymbol(character);
             }
         }
         
