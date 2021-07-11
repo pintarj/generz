@@ -253,3 +253,35 @@ describe('merge', () => {
         expect(regex.match('azz', {machine_id: 1})).toBe('azz');
     });
 });
+
+describe('complex', () => {
+    test('exclamations', () => {
+        const regex = f('wo+w|yeah?|[o0O]*k');
+        expect(regex.match('wow')).toBe('wow');
+        expect(regex.match('wooow')).toBe('wooow');
+        expect(regex.match('yea')).toBe('yea');
+        expect(regex.match('yeah')).toBe('yeah');
+        expect(regex.match('k')).toBe('k');
+        expect(regex.match('ok')).toBe('ok');
+        expect(regex.match('o0ok')).toBe('o0ok');
+        expect(regex.match('wy')).toBe(false);
+    });
+
+    test('at-least-three-a', () => {
+        const context = new Context();
+        const regex = f('a+aa', {context});
+        expect(regex.match('a')).toEqual(false);
+        expect(regex.match('aa')).toEqual(false);
+        expect(regex.match('aaa')).toEqual('aaa');
+        expect(regex.match('aaaaaaa')).toEqual('aaaaaaa');
+    });
+
+    test('final-xyz', () => {
+        const context = new Context();
+        const regex = f('[a-z]*xyz', {context});
+        expect(regex.match('oishi')).toEqual(false);
+        expect(regex.match('miguto')).toEqual(false);
+        expect(regex.match('xyz')).toEqual('xyz');
+        expect(regex.match('nakamotoxyz')).toEqual('nakamotoxyz');
+    });
+});
