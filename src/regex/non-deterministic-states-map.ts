@@ -1,6 +1,6 @@
 import {Context} from './context';
 import {State} from './state';
-import {InternalGenerzError} from '@dist/error';
+import {InternalError} from '../error';
 
 /**
  * Each state that is created by this class (and was not initially specified as initial-state)
@@ -67,7 +67,7 @@ export class NonDeterministicStatesMap {
                 continue;
             }
             
-            InternalGenerzError.throw(`One of provided states (${state.id}) is not initial and even not virtual.`);
+            throw new InternalError(`One of provided states (${state.id}) is not initial and even not virtual.`);
         }
         
         const key = [... states_ids].sort((a, b) => a - b).join(',');

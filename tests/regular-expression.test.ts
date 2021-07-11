@@ -2,12 +2,14 @@ import { RegularExpression } from '@dist/regular-expression';
 import { StringReader } from '@dist/reader';
 import { State } from '@dist/regex/state';
 import { Context } from '@dist/regex/context';
+import { CodeError } from '@dist/error';
+import { Point } from '@dist/source/location';
 
 function f(regex: string, options?: {context?: Context}): State {
     return (new RegularExpression(new StringReader(regex), options)).generate();
 }
 
-test('regular-expression-alternation', () => {
+test('alternation', () => {
     const regex = f('a|b');
     expect(regex.match('a')).toBe('a');
     expect(regex.match('b')).toBe('b');
@@ -16,7 +18,7 @@ test('regular-expression-alternation', () => {
     expect(regex.match('')).toBe(false);
 });
 
-test('regular-expression-concatenation', () => {
+test('concatenation', () => {
     const regex = f('ab');
     expect(regex.match('ab')).toBe('ab');
     expect(regex.match('abab')).toBe('ab');
@@ -28,7 +30,7 @@ test('regular-expression-concatenation', () => {
     expect(regex.match('')).toBe(false);
 });
 
-test('regular-expression-zero-or-more', () => {
+test('zero-or-more', () => {
     const regex = f('a*');
     expect(regex.match('')).toBe('');
     expect(regex.match('a')).toBe('a');
@@ -38,7 +40,7 @@ test('regular-expression-zero-or-more', () => {
     expect(regex.match('baaa')).toBe('');
 });
 
-test('regular-expression-one-or-more', () => {
+test('one-or-more', () => {
     const regex = f('a+');
     expect(regex.match('a')).toBe('a');
     expect(regex.match('aa')).toBe('aa');
@@ -48,7 +50,7 @@ test('regular-expression-one-or-more', () => {
     expect(regex.match('baaa')).toBe(false);
 });
 
-test('regular-expression-zero-or-one', () => {
+test('zero-or-one', () => {
     const regex = f('a?');
     expect(regex.match('a')).toBe('a');
     expect(regex.match('')).toBe('');
@@ -56,7 +58,7 @@ test('regular-expression-zero-or-one', () => {
     expect(regex.match('ba')).toBe('');
 });
 
-test('regular-expression-grouping', () => {
+test('grouping', () => {
     const regex = f('(ab|xy)+');
     expect(regex.match('ab')).toBe('ab');
     expect(regex.match('abxy')).toBe('abxy');
@@ -64,13 +66,13 @@ test('regular-expression-grouping', () => {
     expect(regex.match('xaby')).toBe(false);
 });
 
-test('regular-expression-grouping-empty', () => {
+test('grouping-empty', () => {
     const regex = f('()+');
     expect(regex.match('')).toBe('');
     expect(regex.match('a')).toBe('');
 });
 
-test('regular-expression-grouping-nested', () => {
+test('grouping-nested', () => {
     const regex = f('(a(xb)*b)+');
     expect(regex.match('ab')).toBe('ab');
     expect(regex.match('abab')).toBe('abab');
@@ -81,11 +83,11 @@ test('regular-expression-grouping-nested', () => {
     expect(regex.match('')).toBe(false);
 });
 
-test('regular-expression-grouping-no-closing-parenthesis', () => {
+test('grouping-no-closing-parenthesis', () => {
     expect(() => {f('(bulbasaur').match('ab');}).toThrowError();
 });
 
-test('regular-expression-at-least-two-end', () => {
+test('at-least-two-end', () => {
     const regex = f('a*aa');
     expect(regex.match('aaaaa')).toBe('aaaaa');
     expect(regex.match('aa')).toBe('aa');
@@ -283,5 +285,18 @@ describe('complex', () => {
         expect(regex.match('miguto')).toEqual(false);
         expect(regex.match('xyz')).toEqual('xyz');
         expect(regex.match('nakamotoxyz')).toEqual('nakamotoxyz');
+    });
+});
+
+describe('illegal-expressions', () => {
+    test('missing-closing-block', () => {
+        expect(() => f('(a')).toThrowError(new CodeError('<unknown>', new Point(1, 3), `Expected \`)\` character, but \`EOF\` found.`));
+        expect(() => f('(a]')).toThrowError(new CodeError('<unknown>', new Point(1, 3), `Expected \`)\` character, but \`]\` found.`));
+        expect(() => f('[a')).toThrowError(new CodeError('<unknown>', new Point(1, 3), `Expected \`]\` character, but \`EOF\` found.`));
+        expect(() => f('[a)')).toThrowError(new CodeError('<unknown>', new Point(1, 3), `Expected \`]\` character, but \`)\` found.`));
+    });
+
+    test('missing-range-end', () => {
+        expect(() => f('x[a-]y')).toThrowError(new CodeError('<unknown>', new Point(1, 5), `Expecting last character of interval, but \`]\` found.`));
     });
 });

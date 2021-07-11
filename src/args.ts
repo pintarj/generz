@@ -1,6 +1,6 @@
 import * as fs from 'fs-extra';
 import * as yargs from 'yargs';
-import {ArgsGenerzError} from './error';
+import { ArgsError } from './error';
 
 export default class Args {
     readonly file: string;
@@ -9,7 +9,7 @@ export default class Args {
         this.file = args.file;
 
         if (!fs.existsSync(this.file))
-            ArgsGenerzError.throw(`source file \`${this.file}\` doesn't exists`);
+            throw new ArgsError(`source file \`${this.file}\` doesn't exists`);
     }
 
     public static parse() {
