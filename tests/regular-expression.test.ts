@@ -1,9 +1,10 @@
 import { RegularExpression } from '@dist/regular-expression';
 import { StringReader } from '@dist/reader';
 import { State } from '@dist/regex/state';
+import { Context } from '@dist/regex/context';
 
-function f(regex: string): State {
-    return (new RegularExpression(new StringReader(regex))).generate();
+function f(regex: string, options?: {context?: Context}): State {
+    return (new RegularExpression(new StringReader(regex), options)).generate();
 }
 
 test('regular-expression-alternation', () => {
@@ -197,14 +198,58 @@ describe('brackets', () => {
     });
 });
 
-test('regular-expression-complex-exclamations', () => {
-    const regex = f('wo+w|yeah?|[o0O]*k');
-    expect(regex.match('wow')).toBe('wow');
-    expect(regex.match('wooow')).toBe('wooow');
-    expect(regex.match('yea')).toBe('yea');
-    expect(regex.match('yeah')).toBe('yeah');
-    expect(regex.match('k')).toBe('k');
-    expect(regex.match('ok')).toBe('ok');
-    expect(regex.match('o0ok')).toBe('o0ok');
-    expect(regex.match('wy')).toBe(false);
+describe('merge', () => {
+    test('else-elif', () => {
+        const context = new Context();
+        const m0 = f('else', {context});
+        const m1 = f('elif', {context});
+        
+        const regex = RegularExpression.merge(context, [m0, m1]);
+        expect(regex.match('else', {machine_id: 0})).toBe('else');
+        expect(regex.match('elif', {machine_id: 1})).toBe('elif');
+        expect(regex.match('el')).toBe(false);
+        expect(regex.match('elsf')).toBe(false);
+    });
+
+    test('for-forall', () => {
+        const context = new Context();
+        const m = [
+            f('for', {context}),
+            f('forall', {context})
+        ];
+        
+        const regex = RegularExpression.merge(context, m);
+        expect(regex.match('for', {machine_id: 0})).toBe('for');
+        expect(regex.match('forall', {machine_id: 1})).toBe('forall');
+        expect(regex.match('fo')).toBe(false);
+        expect(regex.match('foral', {machine_id: 0})).toBe('for');
+    });
+
+    test('naruto-boruto', () => {
+        const context = new Context();
+        const m = [
+            f('naruto', {context}),
+            f('boruto', {context})
+        ];
+        
+        const regex = RegularExpression.merge(context, m);
+        expect(regex.match('naruto', {machine_id: 0})).toBe('naruto');
+        expect(regex.match('boruto', {machine_id: 1})).toBe('boruto');
+        expect(regex.match('ruto')).toBe(false);
+        expect(regex.match('naboruto')).toBe(false);
+    });
+
+    test('complex', () => {
+        const context = new Context();
+        const m = [
+            f('xy', {context}),
+            f('[a-z]+', {context})
+        ];
+        const regex = RegularExpression.merge(context, m);
+        expect(regex.match('')).toBe(false);
+        expect(regex.match('x', {machine_id: 1})).toBe('x');
+        expect(regex.match('xy', {machine_id: 0})).toBe('xy');
+        expect(regex.match('xyz', {machine_id: 1})).toBe('xyz');
+        expect(regex.match('azz', {machine_id: 1})).toBe('azz');
+    });
 });

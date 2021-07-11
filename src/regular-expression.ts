@@ -16,9 +16,9 @@ export class RegularExpression {
     private current_code_point: number;
     private readonly context: Context;
 
-    public constructor(private readonly reader: Reader) {
+    public constructor(private readonly reader: Reader, options?: {context?: Context}) {
         this.current_code_point = this.reader.read().codePointAt(0) || NaN;
-        this.context = new Context();
+        this.context = options?.context || new Context();
     }
 
     private consume_current_code_point(): number {
@@ -213,4 +213,27 @@ export class RegularExpression {
         machine.initial_state.remove_non_determinism(this.context);
         return machine.initial_state;
     }
+
+    public static merge(context: Context, state_machines: State[]): State {
+        const initial_state = context.create_new_state();
+        const final_states_order: number[] = [];
+        const seen_states = new Set<Number>();
+
+        state_machines.forEach((state: State, index: number) => {
+            state.get_transitively_reachable_final_states().forEach((final_state: State) => {
+                if (seen_states.has(final_state.id))
+                    // TODO throw custom error
+                    throw new Error(`Provided states have non-disjunctive final states.`);
+
+                final_state.machine_id = index;
+                final_states_order.push(final_state.id);
+                seen_states.add(final_state.id);
+            });
+
+            initial_state.add_epsilon_transition(state);
+        });
+
+        initial_state.remove_non_determinism(context);
+        return initial_state;
+    } 
 }
