@@ -37,9 +37,11 @@
   },
   "homepage": "https://github.com/pintarj/generz#readme",
   "devDependencies": {
+    "@types/dedent": "^0.7.0",
     "@types/fs-extra": "^9.0.8",
     "@types/jest": "^26.0.20",
     "@types/node": "^14.14.31",
+    "dedent": "^0.7.0",
     "jest": "^26.6.3",
     "ts-jest": "^26.5.2",
     "ts-node": "^9.1.1",
