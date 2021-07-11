@@ -123,7 +123,7 @@ export class IntegerIntervalsSet {
             end = this.intervals[r1.index].end;
             to_remove += 1;
         } else {
-            if (r1.index < this.intervals.length && (end + 1) === this.intervals[r1.index].start) {
+            if (r1.index < this.intervals.length && end === this.intervals[r1.index].start) {
                 end = this.intervals[r1.index].end;
                 to_remove += 1;
             }

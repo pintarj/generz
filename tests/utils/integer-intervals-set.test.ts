@@ -210,6 +210,34 @@ describe('interval-set-add', () => {
             expect(intervals[1].start).toEqual(60);
             expect(intervals[1].end).toEqual(80);
         });
+
+        test('edge-miss-left', () => {
+            set.add(new IntegerInterval(41, 50));
+            expect(intervals).toHaveLength(3);
+            expect(intervals[0].start).toEqual(30);
+            expect(intervals[0].end).toEqual(40);
+            expect(intervals[1].start).toEqual(41);
+            expect(intervals[1].end).toEqual(50);
+            expect(intervals[2].start).toEqual(60);
+            expect(intervals[2].end).toEqual(70);
+            expect(set.contains(39)).toBe(true);
+            expect(set.contains(40)).toBe(false);
+            expect(set.contains(41)).toBe(true);
+        });
+
+        test('edge-miss-right', () => {
+            set.add(new IntegerInterval(50, 59));
+            expect(intervals).toHaveLength(3);
+            expect(intervals[0].start).toEqual(30);
+            expect(intervals[0].end).toEqual(40);
+            expect(intervals[1].start).toEqual(50);
+            expect(intervals[1].end).toEqual(59);
+            expect(intervals[2].start).toEqual(60);
+            expect(intervals[2].end).toEqual(70);
+            expect(set.contains(58)).toBe(true);
+            expect(set.contains(59)).toBe(false);
+            expect(set.contains(60)).toBe(true);
+        });
     });
 });
 
