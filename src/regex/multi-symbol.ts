@@ -2,7 +2,7 @@ import { AbstractSymbol } from './abstract-symbol';
 import { IntegerInterval, IntegerIntervalsSet } from '@dist/utils/integer-intervals-set';
 
 export class MultiSymbol extends AbstractSymbol {
-    public constructor(intervals: IntegerInterval[]) {
+    public constructor(intervals: (IntegerInterval|number)[]) {
         super((() => {
             const set = new IntegerIntervalsSet();
 

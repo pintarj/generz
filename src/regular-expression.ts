@@ -17,6 +17,17 @@ function code_point_to_printable(code_point: number): string {
     return Number.isNaN(code_point) ? 'EOF' : String.fromCodePoint(code_point);
 }
 
+const DIGITS_INTERVAL = Object.freeze(new IntegerInterval(0x30 /* 0 */, 0x39 /* 9 */ + 1));
+const UPPERCASE_LETTERS_INTERVAL = Object.freeze(new IntegerInterval(0x41 /* A */, 0x5A /* Z */ + 1));
+const LOWERCASE_LETTERS_INTERVAL = Object.freeze(new IntegerInterval(0x61 /* a */, 0x7A /* z */ + 1));
+const META_DIGITS_SYMBOL = new MultiSymbol([DIGITS_INTERVAL]);
+const META_ALPHANUMERIC_UNDERSCORE_SYMBOL = new MultiSymbol([
+    DIGITS_INTERVAL,
+    UPPERCASE_LETTERS_INTERVAL,
+    LOWERCASE_LETTERS_INTERVAL,
+    0x5F /* _ */
+]);
+
 export class RegularExpression {
     private current_code_point: number;
     private readonly context: Context;
@@ -45,13 +56,32 @@ export class RegularExpression {
     }
 
     private static is_valid_letter(code_point: number): boolean {
-        return code_point >= 0x41 && code_point <= 0x5A // A-Z
-            || code_point >= 0x61 && code_point <= 0x7A // a-z
-            || code_point >= 0x30 && code_point <= 0x39 // 0-9
-            || code_point == 0x5F;                      // _
+        return META_ALPHANUMERIC_UNDERSCORE_SYMBOL.contains(code_point);
     }
 
     private parse_symbol(): AbstractSymbol|undefined {
+        if (this.current_code_point === 0x5C) { // \
+            this.consume_current_code_point();
+            const character = this.consume_current_code_point();
+
+            switch (character) {
+                case 0x5C: { // \
+                    return new SingleSymbol(character);
+                }
+
+                case 0x64: { // d
+                    return META_DIGITS_SYMBOL;
+                }
+
+                case 0x77: { // w
+                    return META_ALPHANUMERIC_UNDERSCORE_SYMBOL;
+                }
+
+                default:
+                    throw new CodeError(this.reader.file, this.reader.get_point(), `Unknown meta-character: \\${code_point_to_printable(character)}`);
+            }
+        }
+        
         if (RegularExpression.is_valid_letter(this.current_code_point)) {
             const start = this.consume_current_code_point();
 
@@ -69,9 +99,9 @@ export class RegularExpression {
             } else {
                 return new SingleSymbol(start);
             }
-        } else {
-            return undefined;
         }
+
+        return undefined;
     }
 
     private parse_atom(): ParsingResult|undefined {

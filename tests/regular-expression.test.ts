@@ -200,6 +200,50 @@ describe('brackets', () => {
     });
 });
 
+describe('meta-characters', () => {
+    test('unknown', () => {
+        expect(() => f('\\@')).toThrowError('Unknown meta-character: \\@');
+    });
+
+    test('\\\\', () => {
+        const regex = f('\\\\');
+        expect(regex.match('\\')).toEqual('\\');
+    });
+
+    test('\\d', () => {
+        const regex = f('\\d');
+        expect(regex.match('/')).toEqual(false);
+        expect(regex.match('0')).toEqual('0');
+        expect(regex.match('5')).toEqual('5');
+        expect(regex.match('9')).toEqual('9');
+        expect(regex.match(':')).toEqual(false);
+        expect(regex.match('a')).toEqual(false);
+    });
+
+    test('\\w', () => {
+        const regex = f('\\w');
+        expect(regex.match('/')).toEqual(false);
+        expect(regex.match('0')).toEqual('0');
+        expect(regex.match('5')).toEqual('5');
+        expect(regex.match('9')).toEqual('9');
+        expect(regex.match(':')).toEqual(false);
+        expect(regex.match('<')).toEqual(false);
+        expect(regex.match('@')).toEqual(false);
+        expect(regex.match('A')).toEqual('A');
+        expect(regex.match('K')).toEqual('K');
+        expect(regex.match('Z')).toEqual('Z');
+        expect(regex.match('[')).toEqual(false);
+        expect(regex.match(']')).toEqual(false);
+        expect(regex.match('^')).toEqual(false);
+        expect(regex.match('_')).toEqual('_');
+        expect(regex.match('`')).toEqual(false);
+        expect(regex.match('a')).toEqual('a');
+        expect(regex.match('k')).toEqual('k');
+        expect(regex.match('z')).toEqual('z');
+        expect(regex.match('{')).toEqual(false);
+    });
+});
+
 describe('merge', () => {
     test('else-elif', () => {
         const context = new Context();
