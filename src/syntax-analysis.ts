@@ -6,7 +6,7 @@ import { Location, Point } from './source/location';
 import { Production } from './ast/production';
 import { ProductionNode } from './ast/production-node';
 import { VariableUsage } from './ast/variable-usage';
-import { Terminal } from './ast/terminal';
+import { TerminalUsage } from './ast/terminal-usage';
 import { Node } from './ast/node';
 
 class SyntaxParser {
@@ -66,7 +66,7 @@ class SyntaxParser {
 
                 return (first === first.toUpperCase())
                     ? new VariableUsage(id.location.get_location(), id.lexeme)
-                    : new Terminal(id.location.get_location(), id.lexeme);
+                    : new TerminalUsage(id.location.get_location(), id.lexeme);
             }
 
             default:

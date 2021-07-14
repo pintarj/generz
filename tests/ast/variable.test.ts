@@ -1,7 +1,7 @@
 import { Point, Location } from '@dist/source/location';
 import { Variable } from '@dist/ast/variable';
 import { Production } from '@dist/ast/production';
-import { Terminal } from '@dist/ast/terminal';
+import { TerminalUsage } from '@dist/ast/terminal-usage';
 
 const location = new Location(new Point(2, 4), new Point(3, 3));
 
@@ -14,7 +14,7 @@ test('empty', () => {
 });
 
 test('one-production', () => {
-    const production = new Production(location, [new Terminal(location, 'nop')]);
+    const production = new Production(location, [new TerminalUsage(location, 'nop')]);
     const variable = new Variable(location, 'X', [production]);
     expect(variable.location).toEqual(location);
     expect(variable.name).toEqual('X');
@@ -45,8 +45,8 @@ describe('epsilon-production', () => {
     });
 
     test('filtering', () => {
-        const production_0 = new Production(location, [new Terminal(location, 'a')]);
-        const production_1 = new Production(location, [new Terminal(location, 'b')]);
+        const production_0 = new Production(location, [new TerminalUsage(location, 'a')]);
+        const production_1 = new Production(location, [new TerminalUsage(location, 'b')]);
         const variable = new Variable(location, 'X', [
             Production.create_epsilon(location),
             production_0,

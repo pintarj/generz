@@ -6,7 +6,7 @@ import { Source } from '@dist/ast/source';
 import { Location, Point } from '@dist/source/location';
 import { Variable } from '@dist/ast/variable';
 import { Production } from '@dist/ast/production';
-import { Terminal } from '@dist/ast/terminal';
+import { TerminalUsage } from '@dist/ast/terminal-usage';
 import { VariableUsage } from '@dist/ast/variable-usage';
 import dedent from 'dedent';
 
@@ -84,11 +84,11 @@ test('complex', () => {
         new Variable(loc(1, 1, 5, 1), "Statement", [
             Production.create_epsilon(loc(2, 5, 2, 11)),
             new Production(loc(3, 5, 3, 31), [
-                new Terminal(loc(3, 16, 3, 20), 'minus'),
+                new TerminalUsage(loc(3, 16, 3, 20), 'minus'),
                 new VariableUsage(loc(3, 22, 3, 31), 'Expression')
             ]),
             new Production(loc(4, 5, 4, 29), [
-                new Terminal(loc(4, 16, 4, 18), 'not'),
+                new TerminalUsage(loc(4, 16, 4, 18), 'not'),
                 new VariableUsage(loc(4, 20, 4, 29), 'Expression')
             ])
         ]),

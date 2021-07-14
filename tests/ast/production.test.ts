@@ -1,5 +1,5 @@
 import { Production } from '@dist/ast/production';
-import { Terminal } from '@dist/ast/terminal';
+import { TerminalUsage } from '@dist/ast/terminal-usage';
 import { Location, Point } from '@dist/source/location';
 
 const location = new Location(new Point(2, 4), new Point(3, 3));
@@ -18,8 +18,8 @@ test('epsilon', () => {
 
 test('simple', () => {
     const production = new Production(location, [
-        new Terminal(location, 'if'),
-        new Terminal(location, 'else')
+        new TerminalUsage(location, 'if'),
+        new TerminalUsage(location, 'else')
     ]);
 
     expect(production.nodes).toHaveLength(2);
