@@ -53,6 +53,34 @@ describe('parse-identifier', () => {
     });
 });
 
+test('parse-regex', () => {
+    const source = ` /hello+\\/yes/ `;
+    const result = parse(new SourceReader(new StringReader(source)));
+    expect(result).toStrictEqual([{
+        type: SymbolType.REGEX,
+        location: new Location(new Point(1, 2), new Point(1, 14)),
+        lexeme: '/hello+\\/yes/'
+    }, {
+        type: SymbolType.EOF,
+        location: new Point(1, 16),
+        lexeme: ''
+    }]);
+});
+
+test('parse-terminal', () => {
+    const source = `terminal`;
+    const result = parse(new SourceReader(new StringReader(source)));
+    expect(result).toStrictEqual([{
+        type: SymbolType.TERMINAL,
+        location: new Location(new Point(1, 1), new Point(1, 8)),
+        lexeme: 'terminal'
+    }, {
+        type: SymbolType.EOF,
+        location: new Point(1, 9),
+        lexeme: ''
+    }]);
+});
+
 test('parse-variable', () => {
     const source = `variable`;
     const result = parse(new SourceReader(new StringReader(source)));

@@ -4,6 +4,8 @@ import { CodeError } from './error';
 
 export enum SymbolType {
     IDENTIFIER,
+    TERMINAL,
+    REGEX,
     VARIABLE,
     PRODUCTION,
     EPSILON,
@@ -38,6 +40,25 @@ export function parse(reader: SourceReader): Symbol[] {
             type = SymbolType.BRACES_LEFT;
         } else if (lexeme === '}') {
             type = SymbolType.BRACES_RIGHT;
+        } else if (lexeme === '/') {
+            type = SymbolType.REGEX;
+            let escaping = false;
+
+            while (true) {
+                const c = reader.read();
+                lexeme += c;
+
+                if (escaping) {
+                    escaping = false;
+                } else {
+                    if (c === '\\') {
+                        escaping = true;
+                    } else if (c === '/') {
+                        location = new Location(location as Point, reader.get_point())
+                        break;
+                    }
+                }
+            }
         } else if (REGEX_ID_START.test(lexeme)) {
             let last_point: Point|undefined;
 
@@ -54,9 +75,13 @@ export function parse(reader: SourceReader): Symbol[] {
             }
 
             if (last_point !== undefined)
-            location = new Location(location as Point, last_point);
+                location = new Location(location as Point, last_point);
 
             switch (lexeme) {
+                case 'terminal': {
+                    type = SymbolType.TERMINAL;
+                    break;
+                }
                 case 'variable': {
                     type = SymbolType.VARIABLE;
                     break;
