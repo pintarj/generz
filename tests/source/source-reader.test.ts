@@ -1,4 +1,5 @@
 import { StringReader } from '@dist/reader';
+import { Point } from '@dist/source/location';
 import { SourceReader } from '@dist/source/source-reader';
 
 test('file', () => {
@@ -108,4 +109,16 @@ test('revoke-eof', () => {
     reader.revoke();
     expect(reader.read()).toBe('');
     expect(reader.get_point()).toMatchObject({line: 1, column: 2});
+});
+
+test('location-offset', () => {
+    const reader = new SourceReader(new StringReader('xyz'), {location_offset: new Point(5, 7)})
+    expect(reader.read()).toBe('x')
+    expect(reader.get_point()).toMatchObject({line: 5, column: 7})
+    expect(reader.read()).toBe('y')
+    expect(reader.get_point()).toMatchObject({line: 5, column: 8})
+    expect(reader.read()).toBe('z')
+    expect(reader.get_point()).toMatchObject({line: 5, column: 9})
+    expect(reader.read()).toBe('')
+    expect(reader.get_point()).toMatchObject({line: 5, column: 10})
 });

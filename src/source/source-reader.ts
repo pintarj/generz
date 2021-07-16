@@ -8,9 +8,15 @@ export class SourceReader implements Reader {
     private current: string;
     private cache: string|null;
 
-    public constructor(private reader: Reader, options?: {file?: string}) {
-        this.line    = 1;
-        this.column  = 0;
+    public constructor(
+        private reader: Reader,
+        options?: {
+            file?: string,
+            location_offset?: Point
+        }
+    ) {
+        this.line    = options?.location_offset?.line || 1;
+        this.column  = (options?.location_offset?.column || 1) - 1;
         this.current = '\a';
         this.cache   = null;
         this.file    = options?.file || '<unknown>';
