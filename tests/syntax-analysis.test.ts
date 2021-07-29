@@ -90,6 +90,27 @@ describe('terminals', () => {
             ]));
         });
 
+        test('no-regex', () => {
+            const source = `terminal if`;
+            const ast = parse_from_source(source);
+
+            (ast as Source)?.declarations
+                .filter((x): x is Terminal => x.is_terminal())
+                .forEach(x => set_id_of_states_in_regex_to_0(x.regex))
+
+            expect(ast).toEqual(new Source(loc(1, 1, 1, 12), [
+                new Terminal(loc(1, 1, 1, 11), 'if', Object.assign(new State(0), {
+                    transitions: [
+                        new Transition(new SingleSymbol('i'.codePointAt(0)!), Object.assign(new State(0), {
+                            transitions: [
+                                new Transition(new SingleSymbol('f'.codePointAt(0)!), new State(0, {is_final: true}))
+                            ]
+                        }))
+                    ]
+                }))
+            ]));
+        });
+
         test('symbol', () => {
             const source = `terminal var /x/`;
             const ast = parse_from_source(source);
@@ -120,6 +141,7 @@ test('complex', () => {
         variable X {}
 
         terminal minus /m/
+        terminal x
     `;
     const ast = parse_from_source(source);
 
@@ -127,7 +149,7 @@ test('complex', () => {
         .filter((x): x is Terminal => x.is_terminal())
         .forEach(x => set_id_of_states_in_regex_to_0(x.regex))
 
-    expect(ast).toEqual(new Source(loc(1, 1, 9, 19), [
+    expect(ast).toEqual(new Source(loc(1, 1, 10, 11), [
         new Variable(loc(1, 1, 5, 1), "Statement", [
             Production.create_epsilon(loc(2, 5, 2, 11)),
             new Production(loc(3, 5, 3, 31), [
@@ -143,6 +165,11 @@ test('complex', () => {
         new Terminal(loc(9, 1, 9, 18), 'minus', Object.assign(new State(0), {
             transitions: [
                 new Transition(new SingleSymbol('m'.codePointAt(0)!), new State(0, {is_final: true}))
+            ]
+        })),
+        new Terminal(loc(10, 1, 10, 10), 'x', Object.assign(new State(0), {
+            transitions: [
+                new Transition(new SingleSymbol('x'.codePointAt(0)!), new State(0, {is_final: true}))
             ]
         }))
     ]));
