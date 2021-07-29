@@ -1,6 +1,6 @@
 import { Location } from '../source/location'
 import { State } from '@dist/regex/state'
-import { Declaration } from './declaration'
+import { Declaration, DeclarationType } from './declaration'
 
 export class Terminal extends Declaration {
     public constructor(
@@ -8,6 +8,6 @@ export class Terminal extends Declaration {
         name: string,
         public readonly regex: State
     ) {
-        super(location, name)
+        super(location, DeclarationType.TERMINAL, name)
     }
 }

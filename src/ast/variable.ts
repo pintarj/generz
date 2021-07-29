@@ -1,6 +1,6 @@
 import { Production } from './production';
 import { Location } from '../source/location';
-import { Declaration } from './declaration'
+import { Declaration, DeclarationType } from './declaration'
 
 export class Variable extends Declaration {
     public readonly productions: Production[];
@@ -11,7 +11,7 @@ export class Variable extends Declaration {
         name: string,
         productions: Production[]
     ) {
-        super(location, name);
+        super(location, DeclarationType.VARIABLE, name);
         let epsilon = false;
 
         this.productions = productions.filter(production => {
