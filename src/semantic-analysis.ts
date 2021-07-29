@@ -1,4 +1,5 @@
 import { DeclarationType } from './ast/declaration'
+import { ProductionNodeType } from './ast/production-node'
 import { Source } from './ast/source'
 import { Terminal } from './ast/terminal'
 import { Variable } from './ast/variable'
@@ -45,6 +46,34 @@ export function analyze(file: string, source: Source): void {
 
             default:
                 throw new Error('Lack of implementation.')
+        }
+    }
+
+    for (const variable of variables.values()) {
+        for (const production of variable.productions) {
+            for (const node of production.nodes) {
+                switch (node.type) {
+                    case ProductionNodeType.TERMINAL_USAGE: {
+                        const terminal = terminals.get(node.name)
+
+                        if (terminal === undefined)
+                            throw new CodeError(file, node.location, `Using undeclared terminal \`${node.name}\`.`)
+
+                        break
+                    }
+
+                    case ProductionNodeType.VARIABLE_USAGE: {
+                        const variable = variables.get(node.name)
+
+                        if (variable === undefined)
+                            throw new CodeError(file, node.location, `Using undeclared variable \`${node.name}\`.`)
+                        break
+                    }
+                    
+                    default:
+                        throw new Error('Lack of implementation.')
+                }
+            }
         }
     }
 }

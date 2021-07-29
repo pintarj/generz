@@ -37,3 +37,23 @@ test('duplicate-variable-name', () => {
 
     expect(() => analyze(source)).toThrow('Duplicate variable name `World` detected. Firstly used at 1:1-1:17.')
 })
+
+test('undeclared-terminal', () => {
+    const source = dedent`
+        variable X {
+            production x
+        }
+    `
+
+    expect(() => analyze(source)).toThrow('Using undeclared terminal `x`.')
+})
+
+test('undeclared-variable', () => {
+    const source = dedent`
+        variable X {
+            production Y
+        }
+    `
+
+    expect(() => analyze(source)).toThrow('Using undeclared variable `Y`.')
+})
