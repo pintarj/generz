@@ -1,4 +1,4 @@
-import { ProductionNode } from './production-node';
+import { ProductionNode, ProductionNodeType } from './production-node';
 import { Location } from '../source/location';
 
 export class VariableUsage extends ProductionNode {
@@ -6,6 +6,6 @@ export class VariableUsage extends ProductionNode {
         location: Location,
         name: string
     ) {
-        super(location, name);
+        super(location, ProductionNodeType.VARIABLE_USAGE, name)
     }
 }
