@@ -9,12 +9,22 @@ import { Production } from '@dist/ast/production';
 import { TerminalUsage } from '@dist/ast/terminal-usage';
 import { VariableUsage } from '@dist/ast/variable-usage';
 import dedent from 'dedent';
+import { Terminal } from '@dist/ast/terminal'
+import { State } from '@dist/regex/state'
+import { Transition } from '@dist/regex/transition'
+import { SingleSymbol } from '@dist/regex/single-symbol'
 
 function loc(start_line: number, start_column: number, end_line: number, end_column: number): Location {
     return new Location(
         new Point(start_line, start_column),
         new Point(end_line, end_column)
     );
+}
+
+function set_id_of_states_in_regex_to_0(regex: State): State {
+    (regex as any).id = 0;
+    regex.get_transitively_reachable_states().forEach(state => (state as any).id = 0);
+    return regex
 }
 
 function parse_from_source(source: string): Source {
@@ -69,6 +79,36 @@ describe('variables', () => {
     });
 });
 
+describe('terminals', () => {
+    describe('single', () => {
+        test('empty', () => {
+            const source = `terminal any //`;
+            const ast = parse_from_source(source);
+
+            expect(ast).toEqual(new Source(loc(1, 1, 1, 16), [
+                new Terminal(loc(1, 1, 1, 15), 'any', new State(0, {is_final: true}))
+            ]));
+        });
+
+        test('symbol', () => {
+            const source = `terminal var /x/`;
+            const ast = parse_from_source(source);
+
+            (ast as Source)?.declarations
+                .filter((x): x is Terminal => x.is_terminal())
+                .forEach(x => set_id_of_states_in_regex_to_0(x.regex))
+
+            expect(ast).toEqual(new Source(loc(1, 1, 1, 17), [
+                new Terminal(loc(1, 1, 1, 16), 'var', Object.assign(new State(0), {
+                    transitions: [
+                        new Transition(new SingleSymbol('x'.codePointAt(0)!), new State(0, {is_final: true}))
+                    ]
+                }))
+            ]));
+        });
+    });
+});
+
 test('complex', () => {
     const source = dedent`
         variable Statement {
@@ -78,9 +118,16 @@ test('complex', () => {
         }
 
         variable X {}
+
+        terminal minus /m/
     `;
     const ast = parse_from_source(source);
-    expect(ast).toEqual(new Source(loc(1, 1, 7, 14), [
+
+    (ast as Source)?.declarations
+        .filter((x): x is Terminal => x.is_terminal())
+        .forEach(x => set_id_of_states_in_regex_to_0(x.regex))
+
+    expect(ast).toEqual(new Source(loc(1, 1, 9, 19), [
         new Variable(loc(1, 1, 5, 1), "Statement", [
             Production.create_epsilon(loc(2, 5, 2, 11)),
             new Production(loc(3, 5, 3, 31), [
@@ -92,6 +139,11 @@ test('complex', () => {
                 new VariableUsage(loc(4, 20, 4, 29), 'Expression')
             ])
         ]),
-        new Variable(loc(7, 1, 7, 13), "X", [])
+        new Variable(loc(7, 1, 7, 13), 'X', []),
+        new Terminal(loc(9, 1, 9, 18), 'minus', Object.assign(new State(0), {
+            transitions: [
+                new Transition(new SingleSymbol('m'.codePointAt(0)!), new State(0, {is_final: true}))
+            ]
+        }))
     ]));
 });

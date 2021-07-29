@@ -2,20 +2,27 @@ import { Symbol, SymbolType } from './lexical-analysis';
 import { Source } from './ast/source';
 import { Variable } from './ast/variable';
 import { CodeError } from './error';
-import { Location, Point } from './source/location';
+import { Locatable, Location, Point } from './source/location';
 import { Production } from './ast/production';
 import { ProductionNode } from './ast/production-node';
 import { VariableUsage } from './ast/variable-usage';
 import { TerminalUsage } from './ast/terminal-usage';
 import { Node } from './ast/node';
+import { Terminal } from './ast/terminal';
+import { RegularExpression } from './regular-expression';
+import { Context } from './regex/context';
+import { StringReader } from './reader';
+import { SourceReader } from './source/source-reader';
 
 class SyntaxParser {
+    private regex_context: Context;
     private index: number;
 
     public constructor(
         public readonly file: string,
         public readonly symbols: Symbol[]
     ) {
+        this.regex_context = new Context();
         this.index = 0;
     }
 
@@ -94,8 +101,34 @@ class SyntaxParser {
         }
     }
 
-    private parse_variable(): Variable|undefined {
+    private parse_declarations(): Terminal|Variable|undefined {
         switch (this.current_symbol.type) {
+            case SymbolType.TERMINAL: {
+                const start = this.consume().location.get_location().start
+                const name_symbol = this.require(SymbolType.IDENTIFIER)
+                let regex_source = name_symbol.lexeme
+                let end: Locatable = name_symbol.location
+
+                if (this.current_symbol.type as any === SymbolType.REGEX) {
+                    const regex_symbol = this.consume()
+                    regex_source = regex_symbol.lexeme.slice(1, -1)
+                    end = regex_symbol.location
+                }
+
+                const reader = new SourceReader(new StringReader(regex_source), {
+                    file: this.file,
+                    location_offset: start
+                });
+
+                const regex = (new RegularExpression(reader, {context: this.regex_context})).generate()   
+                
+                return new Terminal(
+                    new Location(start, end.get_location().end),
+                    name_symbol.lexeme,
+                    regex
+                );
+            }
+
             case SymbolType.VARIABLE: {
                 const start = this.consume().location.get_location().start;
                 const name_symbol = this.require(SymbolType.IDENTIFIER);
@@ -117,10 +150,10 @@ class SyntaxParser {
     }
 
     public parse(): Source {
-        const variables = this.collect(this.parse_variable);
-        const eof_symbol = this.require(SymbolType.EOF);
+        const declarations = this.collect(this.parse_declarations)
+        const eof_symbol = this.require(SymbolType.EOF)
         const location = new Location(new Point(1, 1), eof_symbol.location.get_location().end) 
-        return new Source(location, variables);
+        return new Source(location, declarations)
     }
 }
 
