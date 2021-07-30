@@ -77,6 +77,13 @@ describe('variables', () => {
             ]));
         });
     });
+
+    describe('productions', () => {
+        test('empty', () => {
+            const source = `variable X { production }`
+            expect(() => parse_from_source(source)).toThrow('Expected at least one `PRODUCTION_NODE`, but zero found.')
+        })
+    })
 });
 
 describe('terminals', () => {

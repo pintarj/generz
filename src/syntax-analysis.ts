@@ -55,7 +55,7 @@ class SyntaxParser {
 
             if (element === undefined) {
                 if (options?.at_least_one !== undefined && collection.length === 0)
-                    new CodeError(this.file, this.current_symbol.location, `Expected at least one \`${options.at_least_one.node_name}\`, but zero found.`)
+                    throw new CodeError(this.file, this.current_symbol.location, `Expected at least one \`${options.at_least_one.node_name}\`, but zero found.`)
                 
                 return collection;
             }
