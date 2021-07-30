@@ -57,3 +57,114 @@ test('undeclared-variable', () => {
 
     expect(() => analyze(source)).toThrow('Using undeclared variable `Y`.')
 })
+
+describe('left-recursion-loop', () => {
+    test('self', () => {
+        const source = dedent`
+            variable X {
+                production X
+            }
+        `
+        expect(() => analyze(source)).toThrow('Left-recursion loop detected: X→X')
+    })
+
+    describe('transitive', () => {
+        test('self', () => {
+            const source = dedent`
+                variable X {
+                    production Y
+                }
+                variable Y {
+                    production Y
+                }
+            `
+            expect(() => analyze(source)).toThrow('Left-recursion loop detected: Y→Y')
+        })
+
+        test('two', () => {
+            const source = dedent`
+                variable X {
+                    production Y
+                }
+                variable Y {
+                    production X
+                }
+            `
+            expect(() => analyze(source)).toThrow('Left-recursion loop detected: X→Y→X')
+        })
+    
+        test('three', () => {
+            const source = dedent`
+                variable X {
+                    production Y
+                }
+                variable Y {
+                    production Z
+                }
+                variable Z {
+                    production X
+                }
+            `
+            expect(() => analyze(source)).toThrow('Left-recursion loop detected: X→Y→Z→X')
+        })
+    })
+
+    describe('epsilon', () => {
+        test('self-single', () => {
+            const source = dedent`
+                terminal a
+                variable X {
+                    production Y X
+                }
+                variable Y {
+                    production a
+                    epsilon
+                }
+            `
+            expect(() => analyze(source)).toThrow('Left-recursion loop detected: X→X')
+        })
+
+        test('self-double', () => {
+            const source = dedent`
+                terminal a
+                terminal b
+                variable X {
+                    production A B X
+                }
+                variable A {
+                    production a
+                    epsilon
+                }
+                variable B {
+                    production b
+                    epsilon
+                }
+            `
+            expect(() => analyze(source)).toThrow('Left-recursion loop detected: X→X')
+        })
+    })
+
+    describe('complex', () => {
+        test('0', () => {
+            const source = dedent`
+                terminal a
+                terminal b
+                terminal c
+                variable X {
+                    production a X b
+                    production Y X
+                    epsilon
+                }
+                variable Y {
+                    production b
+                    production Z Y
+                }
+                variable Z {
+                    production a b Z
+                    production X b b Y
+                }
+            `
+            expect(() => analyze(source)).toThrow('Left-recursion loop detected: X→Y→Z→X')
+        })
+    })
+})
