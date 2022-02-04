@@ -14,7 +14,7 @@ export class StringReader implements Reader {
         if (this.index == this.source.length)
             return ''
 
-        var value = this.source[this.index]
+        const value = this.source[this.index]
         this.index += 1
         return value
     }

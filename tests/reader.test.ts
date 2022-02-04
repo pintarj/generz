@@ -1,7 +1,7 @@
 import {Reader, StringReader} from '@dist/reader'
 
 test('string-reader', () => {
-    var reader: Reader = new StringReader('pikachu')
+    const reader: Reader = new StringReader('pikachu')
     expect(reader.read()).toBe('p')
     expect(reader.read()).toBe('i')
     expect(reader.read()).toBe('k')
