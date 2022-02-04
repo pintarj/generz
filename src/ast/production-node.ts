@@ -1,5 +1,5 @@
-import { Location } from '../source/location';
-import { Node } from './node';
+import { Location } from '../source/location'
+import { Node } from './node'
 
 export enum ProductionNodeType {
     TERMINAL_USAGE = 'TERMINAL_USAGE',
@@ -12,6 +12,6 @@ export abstract class ProductionNode extends Node {
         public readonly type: ProductionNodeType,
         public readonly name: string
     ) {
-        super(location);
+        super(location)
     }
 }

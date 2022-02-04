@@ -1,5 +1,5 @@
-import { ProductionNode, ProductionNodeType } from './production-node';
-import { Location } from '../source/location';
+import { ProductionNode, ProductionNodeType } from './production-node'
+import { Location } from '../source/location'
 import { Terminal } from './terminal'
 import { InternalError } from '../error'
 

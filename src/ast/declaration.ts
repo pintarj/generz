@@ -18,10 +18,10 @@ export abstract class Declaration extends Node {
     }
 
     public is_variable(): this is Variable {
-        return this.type === DeclarationType.VARIABLE;
+        return this.type === DeclarationType.VARIABLE
     }
 
     public is_terminal(): this is Terminal {
-        return this.type === DeclarationType.TERMINAL;
+        return this.type === DeclarationType.TERMINAL
     }
 }

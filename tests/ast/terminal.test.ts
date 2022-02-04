@@ -16,4 +16,4 @@ test('simple', () => {
     expect(node.name).toEqual('element')
     expect(node.location).toEqual(location)
     expect(node.regex.match('element')).toBe('element')
-});
+})

@@ -5,7 +5,7 @@ export interface DifferencesAndIntersection<T> {
     left_difference: T,
     intersection: T,
     right_difference: T
-};
+}
 
 /**
  * Represents an integer interval
@@ -18,17 +18,17 @@ export class IntegerInterval {
      */
     public constructor(public readonly start: number, public readonly end: number) {
         if (!Number.isInteger(start) || !Number.isInteger(end))
-            throw new Error('Integer interval must have integer boundaries.');
+            throw new Error('Integer interval must have integer boundaries.')
 
         if (this.length < 0)
-            throw new Error('Integer interval must have non-negative length.');
+            throw new Error('Integer interval must have non-negative length.')
     }
 
     /**
      * Returns the length of the interval.
      */
     public get length(): number {
-        return this.end - this.start;
+        return this.end - this.start
     }
 
     /**
@@ -37,7 +37,7 @@ export class IntegerInterval {
      * @return True if it's present, false otherwise.
      */
     public contains(x: number): boolean {
-        return x >= this.start && x < this.end;
+        return x >= this.start && x < this.end
     }
 }
 
@@ -49,13 +49,13 @@ export class IntegerIntervalsSet {
     /**
      * Where all the intervals are stored (ordered).
      */
-    private intervals: IntegerInterval[];
+    private intervals: IntegerInterval[]
 
     /**
      * Create a new empty integer-intervals set.
      */
     public constructor() {
-        this.intervals = [];
+        this.intervals = []
     }
 
     /**
@@ -68,26 +68,26 @@ export class IntegerIntervalsSet {
      * @private
      */
     private find_number_interval(x: number): {index: number, present: boolean} {
-        let left = 0;
-        let right = this.intervals.length;
+        let left = 0
+        let right = this.intervals.length
 
         while (true) {
-            const length = right - left;
+            const length = right - left
 
             if (length === 0)
-                return {index: left, present: false};
+                return {index: left, present: false}
 
-            const pivot = left + Math.floor(length / 2);
-            const interval = this.intervals[pivot];
+            const pivot = left + Math.floor(length / 2)
+            const interval = this.intervals[pivot]
 
             if (interval.contains(x))
-                return {index: pivot, present: true};
+                return {index: pivot, present: true}
 
             if (x < interval.start) {
-                right = pivot;
+                right = pivot
             } else {
                 // Coming here implies that the number stays on the right of the interval.
-                left = pivot + 1;
+                left = pivot + 1
             }
         }
     }
@@ -100,43 +100,43 @@ export class IntegerIntervalsSet {
     public add(interval: IntegerInterval|number): void {
         let [start, end] = (typeof interval === 'number')
             ? [interval, interval + 1]
-            : [interval.start, interval.end];
+            : [interval.start, interval.end]
 
-        const r0 = this.find_number_interval(start);
-        const r1 = this.find_number_interval(end);
-        let insert_index = r0.index;
-        let to_remove = r1.index - r0.index;
+        const r0 = this.find_number_interval(start)
+        const r1 = this.find_number_interval(end)
+        let insert_index = r0.index
+        let to_remove = r1.index - r0.index
         
         if (r0.present) {
-            start = this.intervals[r0.index].start;
+            start = this.intervals[r0.index].start
         } else {
-            const left_index = r0.index - 1;
+            const left_index = r0.index - 1
 
             if (left_index >= 0 && start === this.intervals[left_index].end) {
-                start = this.intervals[left_index].start;
-                insert_index = left_index;
-                to_remove += 1;
+                start = this.intervals[left_index].start
+                insert_index = left_index
+                to_remove += 1
             }
         }
 
         if (r1.present) {
-            end = this.intervals[r1.index].end;
-            to_remove += 1;
+            end = this.intervals[r1.index].end
+            to_remove += 1
         } else {
             if (r1.index < this.intervals.length && end === this.intervals[r1.index].start) {
-                end = this.intervals[r1.index].end;
-                to_remove += 1;
+                end = this.intervals[r1.index].end
+                to_remove += 1
             }
         }
 
-        this.intervals.splice(insert_index, to_remove, new IntegerInterval(start, end));
+        this.intervals.splice(insert_index, to_remove, new IntegerInterval(start, end))
     }
 
     /**
      * Returns the number of stored intervals.
      */
     public get capacity(): number {
-        return this.intervals.length;
+        return this.intervals.length
     }
 
     /**
@@ -145,8 +145,8 @@ export class IntegerIntervalsSet {
      * @returns True if the number is present in the set, false otherwise.
      */
     public contains(x: number): boolean {
-        const result = this.find_number_interval(x);
-        return result.present;
+        const result = this.find_number_interval(x)
+        return result.present
     }
 
     /**
@@ -154,14 +154,14 @@ export class IntegerIntervalsSet {
      * @returns All the numbers in the set.
      */
     public to_array(): number[] {
-        const numbers: number[] = [];
+        const numbers: number[] = []
 
         for (let interval of this.intervals) {
             for (let i = interval.start; i < interval.end; i += 1)
-                numbers.push(i);
+                numbers.push(i)
         }
 
-        return numbers;
+        return numbers
     }
 
     /**
@@ -171,13 +171,13 @@ export class IntegerIntervalsSet {
      * @returns The calculated union.
      */
     public static calculate_union(left: IntegerIntervalsSet, right: IntegerIntervalsSet): IntegerIntervalsSet {
-        const set = new IntegerIntervalsSet();
-        set.intervals = [...left.intervals];
+        const set = new IntegerIntervalsSet()
+        set.intervals = [...left.intervals]
 
         for (let interval of right.intervals)
-            set.add(interval);
+            set.add(interval)
 
-        return set;
+        return set
     }
 
     /**
@@ -186,20 +186,20 @@ export class IntegerIntervalsSet {
      * @returns The calculated negation.
      */
     public static calculate_negation(set: IntegerIntervalsSet): IntegerIntervalsSet {
-        const negation = new IntegerIntervalsSet();
-        let start = Number.MIN_SAFE_INTEGER;
+        const negation = new IntegerIntervalsSet()
+        let start = Number.MIN_SAFE_INTEGER
 
         for (let interval of set.intervals) {
             if (start < interval.start)
-                negation.add(new IntegerInterval(start, interval.start));
+                negation.add(new IntegerInterval(start, interval.start))
 
-            start = interval.end;
+            start = interval.end
         }
 
         if (start < Number.MAX_SAFE_INTEGER)
-            negation.add(new IntegerInterval(start, Number.MAX_SAFE_INTEGER));
+            negation.add(new IntegerInterval(start, Number.MAX_SAFE_INTEGER))
 
-        return negation;
+        return negation
     }
     
     /**
@@ -209,80 +209,80 @@ export class IntegerIntervalsSet {
      * @returns The calculated differences and intersection.
      */
     public static calculate_differences_and_intersection(left: IntegerIntervalsSet, right: IntegerIntervalsSet): DifferencesAndIntersection<IntegerIntervalsSet> {
-        const left_difference = new IntegerIntervalsSet();
-        const intersection = new IntegerIntervalsSet();
-        const right_difference = new IntegerIntervalsSet();
+        const left_difference = new IntegerIntervalsSet()
+        const intersection = new IntegerIntervalsSet()
+        const right_difference = new IntegerIntervalsSet()
         
         const x: {index: number, start: number|undefined, intervals: IntegerInterval[], difference: IntegerIntervalsSet}[] = [
             {index: 0, start: undefined, intervals: left.intervals, difference: left_difference},
             {index: 0, start: undefined, intervals: right.intervals, difference: right_difference},
-        ];
+        ]
 
         while (true) {
             for (let key = 0; key < 2; ++key) {
                 // If current object was fully processed, then consume the other.
                 if (x[key].index >= x[key].intervals.length) {
-                    const other = x[key ^ 1];
+                    const other = x[key ^ 1]
 
                     for (let i = other.index; i < other.intervals.length; ++i) {
                         if (other.start === undefined) {
-                            other.difference.intervals.push(other.intervals[i]);
+                            other.difference.intervals.push(other.intervals[i])
                         } else {
-                            const end = other.intervals[i].end;
-                            const interval = new IntegerInterval(other.start, end);
-                            other.difference.intervals.push(interval);
-                            other.start = undefined;
+                            const end = other.intervals[i].end
+                            const interval = new IntegerInterval(other.start, end)
+                            other.difference.intervals.push(interval)
+                            other.start = undefined
                         }
                     }
 
-                    return {left_difference, intersection, right_difference};
+                    return {left_difference, intersection, right_difference}
                 }
             }
 
             if (x[0].start === undefined)
-                x[0].start = x[0].intervals[x[0].index].start;
+                x[0].start = x[0].intervals[x[0].index].start
 
             if (x[1].start === undefined)
-                x[1].start = x[1].intervals[x[1].index].start;
+                x[1].start = x[1].intervals[x[1].index].start
 
-            let start_difference = x[0].start - x[1].start;
+            let start_difference = x[0].start - x[1].start
             
             if (start_difference === 0) {
-                const left_end = x[0].intervals[x[0].index].end;
-                const end_difference = left_end - x[1].intervals[x[1].index].end;
+                const left_end = x[0].intervals[x[0].index].end
+                const end_difference = left_end - x[1].intervals[x[1].index].end
 
                 if (end_difference === 0) {
-                    intersection.intervals.push(new IntegerInterval(x[0].start, left_end));
-                    x[0].index += 1;
-                    x[1].index += 1;
-                    x[0].start = undefined;
-                    x[1].start = undefined;
+                    intersection.intervals.push(new IntegerInterval(x[0].start, left_end))
+                    x[0].index += 1
+                    x[1].index += 1
+                    x[0].start = undefined
+                    x[1].start = undefined
                 } else {
                     // Here nearest between two represent the one with the minor 'end'.
-                    const nearest_index = (end_difference < 0) ? 0 : 1;
-                    const nearest = x[nearest_index];
-                    const nearest_interval = nearest.intervals[nearest.index];
-                    const farthest = x[nearest_index ^ 1];
+                    const nearest_index = (end_difference < 0) ? 0 : 1
+                    const nearest = x[nearest_index]
+                    const nearest_interval = nearest.intervals[nearest.index]
+                    const farthest = x[nearest_index ^ 1]
 
-                    intersection.intervals.push(new IntegerInterval(nearest.start!, nearest_interval.end));
-                    nearest.index += 1;
-                    nearest.start = undefined;
-                    farthest.start = nearest_interval.end;
+                    intersection.intervals.push(new IntegerInterval(nearest.start!, nearest_interval.end))
+                    nearest.index += 1
+                    nearest.start = undefined
+                    farthest.start = nearest_interval.end
                 }
             } else {
                 // Here nearest between two represent the one with the minor 'start'.
-                const nearest_index = (start_difference < 0) ? 0 : 1;
-                const nearest = x[nearest_index];
-                const nearest_interval = nearest.intervals[nearest.index];
-                const farthest = x[nearest_index ^ 1];
+                const nearest_index = (start_difference < 0) ? 0 : 1
+                const nearest = x[nearest_index]
+                const nearest_interval = nearest.intervals[nearest.index]
+                const farthest = x[nearest_index ^ 1]
 
                 if (nearest_interval.end <= farthest.start!) {
-                    nearest.difference.intervals.push(new IntegerInterval(nearest.start!, nearest_interval.end));
-                    nearest.index += 1;
-                    nearest.start = undefined;
+                    nearest.difference.intervals.push(new IntegerInterval(nearest.start!, nearest_interval.end))
+                    nearest.index += 1
+                    nearest.start = undefined
                 } else {
-                    nearest.difference.intervals.push(new IntegerInterval(nearest.start!, farthest.start!));
-                    nearest.start = farthest.start;
+                    nearest.difference.intervals.push(new IntegerInterval(nearest.start!, farthest.start!))
+                    nearest.start = farthest.start
                 }
             }
         }

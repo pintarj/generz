@@ -21,7 +21,7 @@ export function analyze(file: string, source: Source): void {
     // Detects duplicate declarations of terminals/variables.
 
     for (const declaration of source.declarations) {
-        const name = declaration.name;
+        const name = declaration.name
 
         switch (declaration.type) {
             case DeclarationType.TERMINAL: {

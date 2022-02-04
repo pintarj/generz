@@ -1,5 +1,5 @@
-import { AbstractSymbol } from './abstract-symbol';
-import { State } from './state';
+import { AbstractSymbol } from './abstract-symbol'
+import { State } from './state'
 
 export class Transition {
     public constructor(public readonly symbol: AbstractSymbol|undefined, public readonly state: State) {
@@ -7,6 +7,6 @@ export class Transition {
     }
 
     public is_epsilon(): boolean {
-        return this.symbol === undefined;
+        return this.symbol === undefined
     }
 }

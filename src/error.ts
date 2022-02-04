@@ -1,4 +1,4 @@
-import { Locatable } from './source/location';
+import { Locatable } from './source/location'
 
 export enum GenerzErrorType {
     ARGS,
@@ -11,7 +11,7 @@ export class GenerzError extends Error {
         public readonly type: GenerzErrorType,
         message: string
     ) {
-        super(message);
+        super(message)
     }
 }
 
@@ -19,7 +19,7 @@ export class ArgsError extends GenerzError {
     public constructor(
         public readonly description: string
     ) {
-        super(GenerzErrorType.ARGS, `${description}`);
+        super(GenerzErrorType.ARGS, `${description}`)
     }
 }
 
@@ -29,7 +29,7 @@ export class CodeError extends GenerzError {
         public readonly location: Locatable,
         public readonly description: string
     ) {
-        super(GenerzErrorType.CODE, `error: ${file}:${location.get_location()} ${description}`);
+        super(GenerzErrorType.CODE, `error: ${file}:${location.get_location()} ${description}`)
     }
 }
 
@@ -37,6 +37,6 @@ export class InternalError extends GenerzError {
     public constructor(
         public readonly description: string
     ) {
-        super(GenerzErrorType.INTERNAL, `INTERNAL ERROR: ${description}`);
+        super(GenerzErrorType.INTERNAL, `INTERNAL ERROR: ${description}`)
     }
 }

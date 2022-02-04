@@ -1,4 +1,4 @@
-import { Location } from '../source/location';
+import { Location } from '../source/location'
 
 /**
  * The base class for all AST nodes.

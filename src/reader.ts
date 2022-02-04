@@ -1,22 +1,22 @@
 
 export interface Reader {
-    read(): string;
+    read(): string
 }
 
 export class StringReader implements Reader {
-    private index: number;
+    private index: number
 
     constructor(private source: string) {
-        this.index = 0;
+        this.index = 0
     }
 
     public read(): string {
         if (this.index == this.source.length)
-            return '';
+            return ''
 
-        var value = this.source[this.index];
-        this.index += 1;
-        return value;
+        var value = this.source[this.index]
+        this.index += 1
+        return value
     }
 }
 

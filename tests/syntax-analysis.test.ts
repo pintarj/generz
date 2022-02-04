@@ -1,14 +1,14 @@
-import { parse } from '../src/syntax-analysis';
-import { parse as lexical_parse } from '../src/lexical-analysis';
-import { SourceReader } from '@dist/source/source-reader';
-import { StringReader } from '@dist/reader';
-import { Source } from '@dist/ast/source';
-import { Location, Point } from '@dist/source/location';
-import { Variable } from '@dist/ast/variable';
-import { Production } from '@dist/ast/production';
-import { TerminalUsage } from '@dist/ast/terminal-usage';
-import { VariableUsage } from '@dist/ast/variable-usage';
-import dedent from 'dedent';
+import { parse } from '../src/syntax-analysis'
+import { parse as lexical_parse } from '../src/lexical-analysis'
+import { SourceReader } from '@dist/source/source-reader'
+import { StringReader } from '@dist/reader'
+import { Source } from '@dist/ast/source'
+import { Location, Point } from '@dist/source/location'
+import { Variable } from '@dist/ast/variable'
+import { Production } from '@dist/ast/production'
+import { TerminalUsage } from '@dist/ast/terminal-usage'
+import { VariableUsage } from '@dist/ast/variable-usage'
+import dedent from 'dedent'
 import { Terminal } from '@dist/ast/terminal'
 import { State } from '@dist/regex/state'
 import { Transition } from '@dist/regex/transition'
@@ -18,65 +18,65 @@ function loc(start_line: number, start_column: number, end_line: number, end_col
     return new Location(
         new Point(start_line, start_column),
         new Point(end_line, end_column)
-    );
+    )
 }
 
 function set_id_of_states_in_regex_to_0(regex: State): State {
-    (regex as any).id = 0;
-    regex.get_transitively_reachable_states().forEach(state => (state as any).id = 0);
+    (regex as any).id = 0
+    regex.get_transitively_reachable_states().forEach(state => (state as any).id = 0)
     return regex
 }
 
 function parse_from_source(source: string): Source {
-    return parse('fake.erz', lexical_parse(new SourceReader(new StringReader(source))));
+    return parse('fake.erz', lexical_parse(new SourceReader(new StringReader(source))))
 }
 
 test('empty', () => {
-    const source = ``;
-    const ast = parse_from_source(source);
-    expect(ast).toEqual(new Source(loc(1, 1, 1, 1), []));
-});
+    const source = ``
+    const ast = parse_from_source(source)
+    expect(ast).toEqual(new Source(loc(1, 1, 1, 1), []))
+})
 
 test('invalid-end', () => {
-    const source = `id`;
-    expect(() => parse_from_source(source)).toThrowError("expected token `EOF`, but found `IDENTIFIER`");
-});
+    const source = `id`
+    expect(() => parse_from_source(source)).toThrowError("expected token `EOF`, but found `IDENTIFIER`")
+})
 
 describe('variables', () => {
     describe('single', () => {
         test('empty', () => {
-            const source = `variable X {}`;
-            const ast = parse_from_source(source);
+            const source = `variable X {}`
+            const ast = parse_from_source(source)
     
             expect(ast).toEqual(new Source(loc(1, 1, 1, 14), [
                 new Variable(loc(1, 1, 1, 13), 'X', [])
-            ]));
-        });
+            ]))
+        })
 
         test('epsilon', () => {
-            const source = `variable X {epsilon}`;
-            const ast = parse_from_source(source);
+            const source = `variable X {epsilon}`
+            const ast = parse_from_source(source)
     
             expect(ast).toEqual(new Source(loc(1, 1, 1, 21), [
                 new Variable(loc(1, 1, 1, 20), 'X', [
                     Production.create_epsilon(loc(1, 1, 1, 1))
                 ])
-            ]));
-        });
-    });
+            ]))
+        })
+    })
 
     describe('multiple', () => {
         test('empty', () => {
-            const source = `variable X {} variable X {}\nvariable Y {}`;
-            const ast = parse_from_source(source);
+            const source = `variable X {} variable X {}\nvariable Y {}`
+            const ast = parse_from_source(source)
     
             expect(ast).toEqual(new Source(loc(1, 1, 2, 14), [
                 new Variable(loc(1, 1, 1, 13), 'X', []),
                 new Variable(loc(1, 15, 1, 27), 'X', []),
                 new Variable(loc(2, 1, 2, 13), 'Y', [])
-            ]));
-        });
-    });
+            ]))
+        })
+    })
 
     describe('productions', () => {
         test('empty', () => {
@@ -84,24 +84,25 @@ describe('variables', () => {
             expect(() => parse_from_source(source)).toThrow('Expected at least one `PRODUCTION_NODE`, but zero found.')
         })
     })
-});
+})
 
 describe('terminals', () => {
     describe('single', () => {
         test('empty', () => {
-            const source = `terminal any //`;
-            const ast = parse_from_source(source);
+            const source = `terminal any //`
+            const ast = parse_from_source(source)
 
             expect(ast).toEqual(new Source(loc(1, 1, 1, 16), [
                 new Terminal(loc(1, 1, 1, 15), 'any', new State(0, {is_final: true}))
-            ]));
-        });
+            ]))
+        })
 
         test('no-regex', () => {
-            const source = `terminal if`;
-            const ast = parse_from_source(source);
+            const source = `terminal if`
+            const ast = parse_from_source(source)
+            const declarations = (ast as Source)?.declarations
 
-            (ast as Source)?.declarations
+            declarations
                 .filter((x): x is Terminal => x.is_terminal())
                 .forEach(x => set_id_of_states_in_regex_to_0(x.regex))
 
@@ -115,14 +116,15 @@ describe('terminals', () => {
                         }))
                     ]
                 }))
-            ]));
-        });
+            ]))
+        })
 
         test('symbol', () => {
-            const source = `terminal var /x/`;
-            const ast = parse_from_source(source);
+            const source = `terminal var /x/`
+            const ast = parse_from_source(source)
+            const declarations = (ast as Source)?.declarations
 
-            (ast as Source)?.declarations
+            declarations
                 .filter((x): x is Terminal => x.is_terminal())
                 .forEach(x => set_id_of_states_in_regex_to_0(x.regex))
 
@@ -132,10 +134,10 @@ describe('terminals', () => {
                         new Transition(new SingleSymbol('x'.codePointAt(0)!), new State(0, {is_final: true}))
                     ]
                 }))
-            ]));
-        });
-    });
-});
+            ]))
+        })
+    })
+})
 
 test('complex', () => {
     const source = dedent`
@@ -149,10 +151,11 @@ test('complex', () => {
 
         terminal minus /m/
         terminal x
-    `;
-    const ast = parse_from_source(source);
+    `
+    const ast = parse_from_source(source)
+    const declarations = (ast as Source)?.declarations
 
-    (ast as Source)?.declarations
+    declarations
         .filter((x): x is Terminal => x.is_terminal())
         .forEach(x => set_id_of_states_in_regex_to_0(x.regex))
 
@@ -179,5 +182,5 @@ test('complex', () => {
                 new Transition(new SingleSymbol('x'.codePointAt(0)!), new State(0, {is_final: true}))
             ]
         }))
-    ]));
-});
+    ]))
+})
