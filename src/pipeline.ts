@@ -1,4 +1,4 @@
-import * as fs from 'fs-extra'
+import fs from 'fs'
 import Args from './args'
 import { SourceReader } from './source/source-reader'
 import { StringReader } from './reader'

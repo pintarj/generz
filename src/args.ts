@@ -1,5 +1,5 @@
-import * as fs from 'fs-extra';
-import * as yargs from 'yargs';
+import fs from 'fs';
+import yargs from 'yargs';
 import { ArgsError } from './error';
 
 export default class Args {
