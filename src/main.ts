@@ -8,7 +8,7 @@ try {
     const args     = Args.parse();
     const pipeline = new Pipeline(args);
     pipeline.run();
-} catch (error) {
+} catch (error: unknown) {
     if (error instanceof ArgsError) {
         console.log(error.message);
         process.exit(1);
@@ -19,7 +19,8 @@ try {
         console.error(error.message);
         process.exit(3);
     } else {
-        console.error(`UNHANDLED ERROR: ${error.toString ? error.toString() : error}`);
+        const _error = error as any;
+        console.error(`UNHANDLED ERROR: ${_error.toString ? _error.toString() : _error}`);
         process.exit(4);
     }
 }
