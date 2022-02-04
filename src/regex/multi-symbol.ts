@@ -1,5 +1,5 @@
 import { AbstractSymbol } from './abstract-symbol';
-import { IntegerInterval, IntegerIntervalsSet } from '@dist/utils/integer-intervals-set';
+import { IntegerInterval, IntegerIntervalsSet } from '../utils/integer-intervals-set';
 
 export class MultiSymbol extends AbstractSymbol {
     public constructor(intervals: (IntegerInterval|number)[]) {
