@@ -168,3 +168,127 @@ describe('left-recursion-loop', () => {
         })
     })
 })
+
+describe('ambiguous-variable', () => {
+    test('simple', () => {
+        const source = dedent`
+            terminal a
+
+            variable X {
+                production a
+                production a
+            }
+        `
+        expect(() => analyze(source)).toThrow('Variable `X` is ambiguous, terminal `a` leads to multiple productions.')
+    })
+
+    describe('epsilon', () => {
+        test('one', () => {
+            const source = dedent`
+                terminal a
+                terminal b
+                
+                variable Y {
+                    production b
+                    epsilon
+                }
+                
+                variable X {
+                    production Y a
+                    production a
+                }
+            `
+            expect(() => analyze(source)).toThrow('Variable `X` is ambiguous, terminal `a` leads to multiple productions.')
+        })
+    
+        test('two', () => {
+            const source = dedent`
+                terminal a
+                terminal b
+                terminal c
+                
+                variable Y {
+                    production b
+                    epsilon
+                }
+                
+                variable Z {
+                    production c
+                    epsilon
+                }
+                
+                variable X {
+                    production Y Z a
+                    production a
+                }
+            `
+            expect(() => analyze(source)).toThrow('Variable `X` is ambiguous, terminal `a` leads to multiple productions.')
+        })
+    
+        test('ambiguous', () => {
+            const source = dedent`
+                terminal a
+                
+                variable Y {
+                    production a
+                    epsilon
+                }
+                
+                variable X {
+                    production Y a
+                }
+            `
+            expect(() => analyze(source)).toThrow('Variable `X` is ambiguous, terminal `a` leads to multiple productions.')
+        })
+    })
+
+    describe('transitive', () => {
+        test('terminal', () => {
+            const source = dedent`
+                terminal a
+                
+                variable Y {
+                    production a
+                }
+                
+                variable X {
+                    production Y
+                    production a
+                }
+            `
+            expect(() => analyze(source)).toThrow('Variable `X` is ambiguous, terminal `a` leads to multiple productions.')
+        })
+    
+        test('variable', () => {
+            const source = dedent`
+                terminal a
+    
+                variable Z {
+                    production Y
+                }
+                
+                variable Y {
+                    production a
+                    production a
+                }
+            `
+            expect(() => analyze(source)).toThrow('Variable `Z` is ambiguous, terminal `a` leads to multiple productions.')
+        })
+    
+        test('same-variable', () => {
+            const source = dedent`
+                terminal a
+    
+                variable Y {
+                    production a
+                }
+                
+                variable X {
+                    production Y
+                    production Y
+                }
+            `
+            expect(() => analyze(source)).toThrow('Variable `X` is ambiguous, terminal `a` leads to multiple productions.')
+        })
+    })
+})
