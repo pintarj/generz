@@ -1,10 +1,12 @@
 import { Production } from './production'
 import { Location } from '../source/location'
 import { Declaration, DeclarationType } from './declaration'
+import { TerminalsMap } from '../semantic-analysis'
 
 export class Variable extends Declaration {
     public readonly productions: Production[]
     public readonly epsilon: boolean
+    private _terminals_maps: TerminalsMap[]|undefined
 
     public constructor(
         location: Location,
@@ -23,5 +25,19 @@ export class Variable extends Declaration {
         })
 
         this.epsilon = epsilon
+    }
+
+    public get terminals_maps(): TerminalsMap[] {
+        if (this._terminals_maps === undefined) {
+            this._terminals_maps = []
+
+            for (const production of this.productions) {
+                for (const terminals_map of production.terminals_maps) {
+                    this._terminals_maps.push(terminals_map)
+                }
+            }
+        }
+
+        return this._terminals_maps
     }
 }
