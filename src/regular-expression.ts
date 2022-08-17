@@ -289,13 +289,13 @@ export class RegularExpression {
         const final_states_order: number[] = []
         const seen_states = new Set<Number>()
 
-        state_machines.forEach((state: State, index: number) => {
+        state_machines.forEach(state => {
             state.get_transitively_reachable_final_states().forEach((final_state: State) => {
                 if (seen_states.has(final_state.id))
                     // TODO throw custom error
                     throw new Error(`Provided states have non-disjunctive final states.`)
 
-                final_state.machine_id = index
+                final_state.machine_id = state.machine_id
                 final_states_order.push(final_state.id)
                 seen_states.add(final_state.id)
             })

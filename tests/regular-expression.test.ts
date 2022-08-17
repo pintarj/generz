@@ -5,8 +5,16 @@ import { Context } from '@dist/regex/context'
 import { CodeError } from '@dist/error'
 import { Point } from '@dist/source/location'
 
-function f(regex: string, options?: {context?: Context}): State {
-    return (new RegularExpression(new StringReader(regex), options)).generate()
+function f(
+    regex: string,
+    options?: {
+        context?: Context,
+        machine_id?: number
+    }
+): State {
+    const state = (new RegularExpression(new StringReader(regex), options)).generate()
+    state.machine_id = options?.machine_id
+    return state
 }
 
 test('alternation', () => {
@@ -296,12 +304,12 @@ describe('meta-characters', () => {
 describe('merge', () => {
     test('else-elif', () => {
         const context = new Context()
-        const m0 = f('else', {context})
-        const m1 = f('elif', {context})
+        const m0 = f('else', {context, machine_id: 12})
+        const m1 = f('elif', {context, machine_id: 55})
         
         const regex = RegularExpression.merge(context, [m0, m1])
-        expect(regex.match('else', {machine_id: 0})).toBe('else')
-        expect(regex.match('elif', {machine_id: 1})).toBe('elif')
+        expect(regex.match('else', {machine_id: 12})).toBe('else')
+        expect(regex.match('elif', {machine_id: 55})).toBe('elif')
         expect(regex.match('el')).toBe(false)
         expect(regex.match('elsf')).toBe(false)
     })
@@ -309,27 +317,27 @@ describe('merge', () => {
     test('for-forall', () => {
         const context = new Context()
         const m = [
-            f('for', {context}),
-            f('forall', {context})
+            f('for', {context, machine_id: 1}),
+            f('forall', {context, machine_id: 2})
         ]
         
         const regex = RegularExpression.merge(context, m)
-        expect(regex.match('for', {machine_id: 0})).toBe('for')
-        expect(regex.match('forall', {machine_id: 1})).toBe('forall')
+        expect(regex.match('for', {machine_id: 1})).toBe('for')
+        expect(regex.match('forall', {machine_id: 2})).toBe('forall')
         expect(regex.match('fo')).toBe(false)
-        expect(regex.match('foral', {machine_id: 0})).toBe('for')
+        expect(regex.match('foral', {machine_id: 1})).toBe('for')
     })
 
     test('naruto-boruto', () => {
         const context = new Context()
         const m = [
-            f('naruto', {context}),
-            f('boruto', {context})
+            f('naruto', {context, machine_id: 69}),
+            f('boruto', {context, machine_id: 420})
         ]
         
         const regex = RegularExpression.merge(context, m)
-        expect(regex.match('naruto', {machine_id: 0})).toBe('naruto')
-        expect(regex.match('boruto', {machine_id: 1})).toBe('boruto')
+        expect(regex.match('naruto', {machine_id: 69})).toBe('naruto')
+        expect(regex.match('boruto', {machine_id: 420})).toBe('boruto')
         expect(regex.match('ruto')).toBe(false)
         expect(regex.match('naboruto')).toBe(false)
     })
@@ -337,15 +345,15 @@ describe('merge', () => {
     test('complex', () => {
         const context = new Context()
         const m = [
-            f('xy', {context}),
-            f('[a-z]+', {context})
+            f('xy', {context, machine_id: 1234}),
+            f('[a-z]+', {context, machine_id: 4321})
         ]
         const regex = RegularExpression.merge(context, m)
         expect(regex.match('')).toBe(false)
-        expect(regex.match('x', {machine_id: 1})).toBe('x')
-        expect(regex.match('xy', {machine_id: 0})).toBe('xy')
-        expect(regex.match('xyz', {machine_id: 1})).toBe('xyz')
-        expect(regex.match('azz', {machine_id: 1})).toBe('azz')
+        expect(regex.match('x', {machine_id: 4321})).toBe('x')
+        expect(regex.match('xy', {machine_id: 1234})).toBe('xy')
+        expect(regex.match('xyz', {machine_id: 4321})).toBe('xyz')
+        expect(regex.match('azz', {machine_id: 4321})).toBe('azz')
     })
 })
 
