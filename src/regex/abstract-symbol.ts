@@ -7,7 +7,7 @@ export type AbstractSymbolFragmentResult = {
 }
 
 export class AbstractSymbol {
-    protected constructor(private readonly set: IntegerIntervalsSet) {
+    protected constructor(public readonly set: IntegerIntervalsSet) {
 
     }
 

@@ -9,6 +9,11 @@ test('constructor', () => {
 })
 
 describe('fragment', () => {
+    test('internal-set', () => {
+        const symbol = new SingleSymbol(33)
+        expect(symbol.set.to_array()).toEqual([33])
+    })
+
     test('two-different-single-symbols', () => {
         const symbol_0 = new SingleSymbol(64)
         const symbol_1 = new SingleSymbol(65)
