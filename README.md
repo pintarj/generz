@@ -24,12 +24,12 @@ Meanwhile, as the *front-end* is source language dependant, it's implementation 
 ---
 ## Description
 
-The purpose of `generz` is to generate **highly-optimized code**[^1], that implements specific *lexical and syntax analysis* phases, AKA code that accepts input source (sequence of characters) and emits AST ([Abstract Syntax Tree](https://en.wikipedia.org/wiki/Abstract_syntax_tree)), leaving to the developers of a compiler to implement just the *semantic analysis* and interact with the *intermediate code generation*.
+The purpose of `generz` is to generate **highly-optimized code**\*, that implements specific *lexical and syntax analysis* phases, AKA code that accepts input source (sequence of characters) and emits AST ([Abstract Syntax Tree](https://en.wikipedia.org/wiki/Abstract_syntax_tree)), leaving to the developers of a compiler to implement just the *semantic analysis* and interact with the *intermediate code generation*.
 
-The behaviour of the generated phases is described in the [**Generz Language**](#generz-language) (`.erz` source files).
+The behavior of the generated phases is described with the [**Generz Language**](#generz-language) (`.erz` source files).
 
 
-[^1]: As *highly-optimized code* is intended that kind of code that sacrifices readability in favor of performances, reducing everything to a low-level of abstraction and builds an API that should be considered as a magical black box, that transform the input in the proper output.
+\*As *highly-optimized code* is intended that kind of code that sacrifices readability in favor of performances, reducing everything to a low-level of abstraction and builds an API that should be considered as a magical black box, that transform the input in the proper output.
 
 ---
 ## Project status
@@ -105,4 +105,4 @@ npm test
 ---
 ## Contributions
 
-**Any** is welcome, even just a star ★ on [Github repository](https://github.com/pintarj/generz).
+**Any** contribution is welcome, even just a star ★ on [Github repository](https://github.com/pintarj/generz).
