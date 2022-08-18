@@ -4,10 +4,11 @@ import { parse as lexical_parse } from '@dist/lexical-analysis'
 import { parse as syntax_parse } from '@dist/syntax-analysis'
 import { analyze as semantic_analyze } from '@dist/semantic-analysis'
 import dedent from 'dedent'
+import { Context } from '@dist/regex/context'
 
 function analyze(source: string): void {
     const file = 'fake.erz'
-    semantic_analyze(file, syntax_parse(file, lexical_parse(new SourceReader(new StringReader(source)))))
+    semantic_analyze(file, syntax_parse(new Context(), file, lexical_parse(new SourceReader(new StringReader(source)))))
 }
 
 test('upper-case-terminal', () => {

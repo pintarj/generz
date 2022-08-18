@@ -15,14 +15,13 @@ import { StringReader } from './reader'
 import { SourceReader } from './source/source-reader'
 
 class SyntaxParser {
-    private regex_context: Context
     private index: number
 
     public constructor(
+        public readonly regex_context: Context,
         public readonly file: string,
         public readonly symbols: Symbol[]
     ) {
-        this.regex_context = new Context()
         this.index = 0
     }
 
@@ -157,6 +156,6 @@ class SyntaxParser {
     }
 }
 
-export function parse(file: string, symbols: Symbol[]): Source {
-    return (new SyntaxParser(file, symbols)).parse()
+export function parse(regex_context: Context, file: string, symbols: Symbol[]): Source {
+    return (new SyntaxParser(regex_context, file, symbols)).parse()
 }

@@ -13,6 +13,7 @@ import { Terminal } from '@dist/ast/terminal'
 import { State } from '@dist/regex/state'
 import { Transition } from '@dist/regex/transition'
 import { SingleSymbol } from '@dist/regex/single-symbol'
+import { Context } from '@dist/regex/context'
 
 function loc(start_line: number, start_column: number, end_line: number, end_column: number): Location {
     return new Location(
@@ -28,7 +29,7 @@ function set_id_of_states_in_regex_to_0(regex: State): State {
 }
 
 function parse_from_source(source: string): Source {
-    return parse('fake.erz', lexical_parse(new SourceReader(new StringReader(source))))
+    return parse(new Context(), 'fake.erz', lexical_parse(new SourceReader(new StringReader(source))))
 }
 
 test('empty', () => {
