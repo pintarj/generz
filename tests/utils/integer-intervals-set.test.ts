@@ -51,7 +51,7 @@ test('interval-contains', () => {
 
 test('interval-set-capacity', () => {
     const set = new IntegerIntervalsSet()
-    const intervals = (set as any).intervals as IntegerInterval[]
+    const intervals = set.get_intervals()
     
     expect(set.capacity).toEqual(0)
     expect(intervals).toHaveLength(0)
@@ -79,7 +79,7 @@ test('interval-set-capacity', () => {
 
 describe('interval-set-add', () => {
     let set = new IntegerIntervalsSet()
-    let intervals = (set as any).intervals as IntegerInterval[]
+    let intervals = set.get_intervals()
 
     beforeEach(() => {
         expect(intervals).toHaveLength(0)
@@ -87,7 +87,7 @@ describe('interval-set-add', () => {
 
     afterEach(() => {
         set = new IntegerIntervalsSet()
-        intervals = (set as any).intervals as IntegerInterval[]
+        intervals = set.get_intervals()
     })
 
     describe('same-insert-index', () => {
@@ -304,7 +304,7 @@ describe('interval-set-calculate_differences_and_intersection', () => {
         left.add(10)
         left.add(20)
         const result = IntegerIntervalsSet.calculate_differences_and_intersection(left, right)
-        let left_intervals = (result.left_difference as any).intervals as IntegerInterval[]
+        let left_intervals = result.left_difference.get_intervals()
         expect(result.left_difference.capacity).toEqual(2)
         expect(left_intervals).toHaveLength(2)
         expect(left_intervals[0].start).toEqual(10)
@@ -319,7 +319,7 @@ describe('interval-set-calculate_differences_and_intersection', () => {
         right.add(10)
         right.add(20)
         const result = IntegerIntervalsSet.calculate_differences_and_intersection(left, right)
-        let right_intervals = (result.right_difference as any).intervals as IntegerInterval[]
+        let right_intervals = result.right_difference.get_intervals()
         expect(result.left_difference.capacity).toEqual(0)
         expect(result.right_difference.capacity).toEqual(2)
         expect(right_intervals).toHaveLength(2)
@@ -337,11 +337,11 @@ describe('interval-set-calculate_differences_and_intersection', () => {
         expect(result.left_difference.capacity).toEqual(0)
         expect(result.right_difference.capacity).toEqual(1)
         expect(result.intersection.capacity).toEqual(1)
-        const intersection_intervals = (result.intersection as any).intervals as IntegerInterval[]
+        const intersection_intervals = result.intersection.get_intervals()
         expect(intersection_intervals).toHaveLength(1)
         expect(intersection_intervals[0].start).toEqual(10)
         expect(intersection_intervals[0].end).toEqual(15)
-        const right_intervals = (result.right_difference as any).intervals as IntegerInterval[]
+        const right_intervals = result.right_difference.get_intervals()
         expect(right_intervals).toHaveLength(1)
         expect(right_intervals[0].start).toEqual(15)
         expect(right_intervals[0].end).toEqual(20)
@@ -354,7 +354,7 @@ describe('interval-set-calculate_differences_and_intersection', () => {
         expect(result.left_difference.capacity).toEqual(0)
         expect(result.right_difference.capacity).toEqual(0)
         expect(result.intersection.capacity).toEqual(1)
-        const intervals = (result.intersection as any).intervals as IntegerInterval[]
+        const intervals = result.intersection.get_intervals()
         expect(intervals).toHaveLength(1)
         expect(intervals[0].start).toEqual(10)
         expect(intervals[0].end).toEqual(20)
@@ -367,11 +367,11 @@ describe('interval-set-calculate_differences_and_intersection', () => {
         expect(result.left_difference.capacity).toEqual(1)
         expect(result.right_difference.capacity).toEqual(0)
         expect(result.intersection.capacity).toEqual(1)
-        const intersection_intervals = (result.intersection as any).intervals as IntegerInterval[]
+        const intersection_intervals = result.intersection.get_intervals()
         expect(intersection_intervals).toHaveLength(1)
         expect(intersection_intervals[0].start).toEqual(10)
         expect(intersection_intervals[0].end).toEqual(20)
-        const left_intervals = (result.left_difference as any).intervals as IntegerInterval[]
+        const left_intervals = result.left_difference.get_intervals()
         expect(left_intervals).toHaveLength(1)
         expect(left_intervals[0].start).toEqual(5)
         expect(left_intervals[0].end).toEqual(10)
@@ -397,14 +397,14 @@ describe('interval-set-calculate_differences_and_intersection', () => {
         expect(result.right_difference.capacity).toEqual(7)
         expect(result.intersection.capacity).toEqual(6)
 
-        const left_intervals = (result.left_difference as any).intervals as IntegerInterval[]
+        const left_intervals = result.left_difference.get_intervals()
         expect(left_intervals).toHaveLength(2)
         expect(left_intervals[0].start).toEqual(-4)
         expect(left_intervals[0].end).toEqual(1)
         expect(left_intervals[1].start).toEqual(15)
         expect(left_intervals[1].end).toEqual(16)
 
-        const right_intervals = (result.right_difference as any).intervals as IntegerInterval[]
+        const right_intervals = result.right_difference.get_intervals()
         expect(right_intervals).toHaveLength(7)
         expect(right_intervals[0].start).toEqual(-16)
         expect(right_intervals[0].end).toEqual(-14)
@@ -421,7 +421,7 @@ describe('interval-set-calculate_differences_and_intersection', () => {
         expect(right_intervals[6].start).toEqual(25)
         expect(right_intervals[6].end).toEqual(27)
 
-        const intersection_intervals = (result.intersection as any).intervals as IntegerInterval[]
+        const intersection_intervals = result.intersection.get_intervals()
         expect(intersection_intervals).toHaveLength(6)
         expect(intersection_intervals[0].start).toEqual(-5)
         expect(intersection_intervals[0].end).toEqual(-4)
@@ -490,9 +490,9 @@ describe('union', () => {
 describe('negation', () => {
     test('empty', () => {
         const set = new IntegerIntervalsSet()
-        const negation = IntegerIntervalsSet.calculate_negation(set) as any
+        const negation = IntegerIntervalsSet.calculate_negation(set)
         
-        expect(negation.intervals).toMatchObject([
+        expect(negation.get_intervals()).toMatchObject([
             {start: Number.MIN_SAFE_INTEGER, end: Number.MAX_SAFE_INTEGER}
         ])
     })
@@ -507,8 +507,8 @@ describe('negation', () => {
     test('single-interval', () => {
         const set = new IntegerIntervalsSet()
         set.add(new IntegerInterval(2, 5))
-        const negation = IntegerIntervalsSet.calculate_negation(set) as any
-        expect(negation.intervals).toMatchObject([
+        const negation = IntegerIntervalsSet.calculate_negation(set)
+        expect(negation.get_intervals()).toMatchObject([
             {start: Number.MIN_SAFE_INTEGER, end: 2},
             {start: 5, end: Number.MAX_SAFE_INTEGER},
         ])
@@ -519,8 +519,8 @@ describe('negation', () => {
         set.add(new IntegerInterval(-100, 0))
         set.add(new IntegerInterval(2, 5))
         set.add(new IntegerInterval(10, 15))
-        const negation = IntegerIntervalsSet.calculate_negation(set) as any
-        expect(negation.intervals).toMatchObject([
+        const negation = IntegerIntervalsSet.calculate_negation(set)
+        expect(negation.get_intervals()).toMatchObject([
             {start: Number.MIN_SAFE_INTEGER, end: -100},
             {start: 0, end: 2},
             {start: 5, end: 10},
@@ -533,8 +533,8 @@ describe('negation', () => {
         set.add(new IntegerInterval(-100, 0))
         set.add(new IntegerInterval(2, 5))
         set.add(new IntegerInterval(10, 15))
-        const negation = IntegerIntervalsSet.calculate_negation(IntegerIntervalsSet.calculate_negation(set)) as any
-        expect(negation.intervals).toMatchObject([
+        const negation = IntegerIntervalsSet.calculate_negation(IntegerIntervalsSet.calculate_negation(set))
+        expect(negation.get_intervals()).toMatchObject([
             {start: -100, end: 0},
             {start: 2, end: 5},
             {start: 10, end: 15}

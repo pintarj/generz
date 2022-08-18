@@ -165,6 +165,14 @@ export class IntegerIntervalsSet {
     }
 
     /**
+     * Returns the intervals in the set.
+     * @returns The intervals.
+     */
+    public get_intervals(): ReadonlyArray<Readonly<IntegerInterval>> {
+        return this.intervals
+    }
+
+    /**
      * Calculates the union of two specified sets.
      * @param left The left specified set.
      * @param right The right specified set.

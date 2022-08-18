@@ -1,4 +1,4 @@
-import { IntegerIntervalsSet, IntegerInterval } from '../utils/integer-intervals-set'
+import { IntegerIntervalsSet } from '../utils/integer-intervals-set'
 
 export type AbstractSymbolFragmentResult = {
     first_exclusive: AbstractSymbol,
@@ -16,7 +16,7 @@ export class AbstractSymbol {
     }
 
     public contains_only(code: number): boolean {
-        const intervals = (this.set as any).intervals as IntegerInterval[]
+        const intervals = this.set.get_intervals()
         return intervals.length === 1 && intervals[0].start === code && intervals[0].end === code + 1
     }
 
