@@ -16,11 +16,11 @@ try {
         console.log(error.message)
         process.exit(2)
     } else if (error instanceof InternalError) {
-        console.error(error.message)
+        console.error(error.stack || error.message)
         process.exit(3)
     } else {
-        const _error = error as any
-        console.error(`UNHANDLED ERROR: ${_error.toString ? _error.toString() : _error}`)
+        const _err = error as any
+        console.error(`UNHANDLED ERROR: ${_err.stack || _err.message || String(_err)}`)
         process.exit(4)
     }
 }
