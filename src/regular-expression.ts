@@ -286,7 +286,6 @@ export class RegularExpression {
 
     public static merge(context: Context, state_machines: State[]): State {
         const initial_state = context.create_new_state()
-        const final_states_order: number[] = []
         const seen_states = new Set<Number>()
 
         state_machines.forEach(state => {
@@ -296,7 +295,6 @@ export class RegularExpression {
                     throw new Error(`Provided states have non-disjunctive final states.`)
 
                 final_state.machine_id = state.machine_id
-                final_states_order.push(final_state.id)
                 seen_states.add(final_state.id)
             })
 
