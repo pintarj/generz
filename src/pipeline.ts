@@ -6,6 +6,7 @@ import { Context } from './regex/context'
 import { parse as lexical_analysis } from './lexical-analysis'
 import { parse as syntax_analysis } from './syntax-analysis'
 import { analyze as semantic_analysis } from './semantic-analysis'
+import { generate as generate_intermediate_code } from './intermediate-code-generation'
 
 export default class Pipeline {
     public constructor(readonly args: Args) {
@@ -19,5 +20,6 @@ export default class Pipeline {
         const regex_context = new Context()
         const ast = syntax_analysis(regex_context, this.args.file, symbols)
         semantic_analysis(this.args.file, ast)
+        /* const declarations = */ generate_intermediate_code(regex_context, ast)
     }
 }
