@@ -129,13 +129,14 @@ export class State {
                     continue
 
                 next_state.is_final = true
+                next_state.machine_id = this.machine_id
                 queue.push(next_state)
                 already_queued.add(next_state.id)
             }
         }
     }
 
-    public reaches_a_final_state(): boolean {
+    public become_final_through_epsilon_transitions(): void {
         const queue: State[] = [this]
         const already_queued: Set<number> = new Set([this.id])
 
@@ -143,10 +144,13 @@ export class State {
             const state = queue.shift()
 
             if (state === undefined)
-                return false
+                break
 
-            if (state.is_final)
-                return true
+            if (state.is_final) {
+                this.is_final = true
+                this.machine_id = state.machine_id
+                break
+            }
 
             for (let transition of state.transitions) {
                 if (!transition.is_epsilon())
@@ -235,7 +239,7 @@ export class State {
             final_state.expand_final_through_epsilon_transitions()
 
         for (let state of all_states.filter((state: State) => !state.is_final))
-            state.is_final = state.reaches_a_final_state()
+            state.become_final_through_epsilon_transitions()
 
         const states_map = new NonDeterministicStatesMap(context, all_states)
         const already_queued = new Set<number>([this.id])
