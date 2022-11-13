@@ -8,6 +8,8 @@ import { parse as syntax_analysis } from './syntax-analysis'
 import { analyze as semantic_analysis } from './semantic-analysis'
 import { generate as generate_intermediate_code } from './intermediate-code-generation'
 import { generate as generate_output, OutputGeneratorInterface } from './output-generation'
+import { TypescriptOutputGenerator } from './output-generators/typescript-output-generator'
+import { CPlusPlusOutputGenerator } from './output-generators/cplusplus-output-generator'
 
 export default class Pipeline {
     public constructor(readonly args: Args) {
@@ -18,6 +20,17 @@ export default class Pipeline {
         const ext = args.output_path.split('.').pop()?.toLowerCase()
 
         switch (ext) {
+            case 'ts':
+                return new TypescriptOutputGenerator()
+            
+            case 'cpp':
+            case 'cxx':
+            case 'c++':
+            case 'hpp':
+            case 'hxx':
+            case 'h++':
+                return new CPlusPlusOutputGenerator()
+
             default:
                 throw new Error(`don't know how to format a \`${ext}\` file`)
         }
