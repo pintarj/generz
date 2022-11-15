@@ -106,6 +106,9 @@ export class State {
         return this.get_transitively_reachable_states().filter(state => state.is_final)
     }
 
+    /**
+     * ! Dead code.
+     */
     public expand_final_through_epsilon_transitions() {
         if (!this.is_final)
             return
@@ -234,13 +237,6 @@ export class State {
 
     public remove_non_determinism(context: Context) {
         const all_states = this.get_transitively_reachable_states()
-
-        for (let final_state of all_states.filter((state: State) => state.is_final))
-            final_state.expand_final_through_epsilon_transitions()
-
-        for (let state of all_states.filter((state: State) => !state.is_final))
-            state.become_final_through_epsilon_transitions()
-
         const states_map = new NonDeterministicStatesMap(context, all_states)
         const already_queued = new Set<number>([this.id])
         const queue: State[] = [this]
@@ -250,6 +246,8 @@ export class State {
 
             if (state === undefined)
                 break
+
+            state.become_final_through_epsilon_transitions()
 
             const map = state.get_transitions_multi_state_map()
             const transitions: Transition[] = []

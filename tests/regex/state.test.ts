@@ -577,168 +577,185 @@ describe('get_transitions_multi_state_map', () => {
     })
 })
 
-test('state-remove-non-determinism-no-infinite-loop', () => {
-    const context = new Context()
-    const state = context.create_new_state()
-    state.add_epsilon_transition(state)
-    state.remove_non_determinism(context)
-    expect(true).toBe(true)
-})
+describe('remove-non-determinism', () => {
+    test('no-infinite-loop', () => {
+        const context = new Context()
+        const state = context.create_new_state()
+        state.add_epsilon_transition(state)
+        state.remove_non_determinism(context)
+        expect(state.transitions).toHaveLength(0)
+    })
+    
+    test('epsilon-loop-final', () => {
+        const context = new Context()
+        const states = [
+            context.create_new_state(),
+            context.create_new_state()
+        ]
+        states[1].is_final = true
+        states[0].add_epsilon_transition(states[1])
+        states[1].add_epsilon_transition(states[0])
+        states[0].remove_non_determinism(context)
+        expect(states[0].is_final).toBe(true)
+    })
+    
+    test('duplicate-transition', () => {
+        const context = new Context()
+        const state_0 = context.create_new_state()
+        const state_1 = context.create_new_state()
+        const state_2 = context.create_new_state()
+        state_0.add_transition(new SingleSymbol(100), state_1)
+        state_0.add_transition(new SingleSymbol(100), state_2)
+        state_1.add_epsilon_transition(state_2)
+        state_2.add_epsilon_transition(state_1)
+        expect(state_0.transitions.length).toBe(2)
+        state_0.remove_non_determinism(context)
+        expect(state_0.transitions.length).toBe(1)
+    })
 
-test('state-remove-non-determinism-epsilon-loop-final', () => {
-    const context = new Context()
-    const states = [
-        context.create_new_state(),
-        context.create_new_state()
-    ]
-    states[1].is_final = true
-    states[0].add_epsilon_transition(states[1])
-    states[1].add_epsilon_transition(states[0])
-    states[0].remove_non_determinism(context)
-    expect(states[0].is_final).toBe(true)
-})
-
-test('state-remove-non-determinism-duplicate-transition', () => {
-    const context = new Context()
-    const state_0 = context.create_new_state()
-    const state_1 = context.create_new_state()
-    const state_2 = context.create_new_state()
-    state_0.add_transition(new SingleSymbol(100), state_1)
-    state_0.add_transition(new SingleSymbol(100), state_2)
-    state_1.add_epsilon_transition(state_2)
-    state_2.add_epsilon_transition(state_1)
-    expect(state_0.transitions.length).toBe(2)
-    state_0.remove_non_determinism(context)
-    expect(state_0.transitions.length).toBe(1)
-})
-
-test('state-remove-non-determinism-case-0', () => {
-    const context = new Context()
-    const [s0, s1, s2] = [context.create_new_state(), context.create_new_state(), context.create_new_state()]
-    const a = new SingleSymbol(0)
-    const b = new SingleSymbol(1)
-    s2.is_final = true
-    s0.add_transition(a, s0)
-    s0.add_transition(b, s1)
-    s1.add_transition(a, s1)
-    s1.add_transition(a, s2)
-    s1.add_transition(b, s1)
-    s2.add_transition(a, s2)
-    s2.add_transition(b, s2)
-    s2.add_transition(b, s1)
-    s0.remove_non_determinism(context)
-    const states = s0.get_transitively_reachable_states().sort((a: State, b: State) => a.id - b.id)
-    expect(states.length).toBe(3)
-    expect(states[0].id).toBe(0)
-    expect(states[1].id).toBe(1)
-    expect(states[2].id).toBe(3)
-    expect(states[0].transitions.length).toBe(2)
-    expect(states[1].transitions.length).toBe(2)
-    expect(states[2].transitions.length).toBe(2)
-    const f = (a: number, b: number) => a - b
-    expect(states[0].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([0, 1])
-    expect(states[1].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([0, 1])
-    expect(states[2].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([0, 1])
-    expect(states[0].transitions.map(x => x.state.id).sort(f)).toEqual([0, 1])
-    expect(states[1].transitions.map(x => x.state.id).sort(f)).toEqual([1, 3])
-    expect(states[2].transitions.map(x => x.state.id).sort(f)).toEqual([3, 3])
-    expect(states[0].is_final).toBe(false)
-    expect(states[1].is_final).toBe(false)
-    expect(states[2].is_final).toBe(true)
-})
-
-test('state-remove-non-determinism-case-1', () => {
-    const context = new Context()
-    const [s0, s1] = [context.create_new_state(), context.create_new_state()]
-    const a = new SingleSymbol(0)
-    const b = new SingleSymbol(1)
-    s1.is_final = true
-    s0.add_transition(a, s0)
-    s0.add_transition(a, s1)
-    s0.add_transition(b, s1)
-    s1.add_transition(b, s1)
-    s1.add_transition(b, s0)
-    s0.remove_non_determinism(context)
-    const states = s0.get_transitively_reachable_states().sort((a: State, b: State) => a.id - b.id)
-    expect(states.length).toBe(3)
-    expect(states[0].id).toBe(0)
-    expect(states[1].id).toBe(1)
-    expect(states[2].id).toBe(2)
-    expect(states[0].transitions.length).toBe(2)
-    expect(states[1].transitions.length).toBe(1)
-    expect(states[2].transitions.length).toBe(2)
-    const f = (a: number, b: number) => a - b
-    expect(states[0].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([0, 1])
-    expect(states[1].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([1])
-    expect(states[2].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([0, 1])
-    expect(states[0].transitions.map(x => x.state.id).sort(f)).toEqual([1, 2])
-    expect(states[1].transitions.map(x => x.state.id).sort(f)).toEqual([2])
-    expect(states[2].transitions.map(x => x.state.id).sort(f)).toEqual([2, 2])
-    expect(states[0].is_final).toBe(false)
-    expect(states[1].is_final).toBe(true)
-    expect(states[2].is_final).toBe(true)
-})
-
-test('state-remove-non-determinism-case-2', () => {
-    const context = new Context()
-    const [s0, s1, s2, s3, s4] = [context.create_new_state(), context.create_new_state(), context.create_new_state(), context.create_new_state(), context.create_new_state()]
-    const [a, b] = [new SingleSymbol(0), new SingleSymbol(1)]
-    s4.is_final = true
-    s0.add_epsilon_transition(s1)
-    s0.add_epsilon_transition(s2)
-    s1.add_transition(a, s3)
-    s2.add_transition(b, s3)
-    s3.add_transition(b, s4)
-    s0.remove_non_determinism(context)
-    const states = s0.get_transitively_reachable_states().sort((a: State, b: State) => a.id - b.id)
-    expect(states.length).toBe(3)
-    expect(states[0].id).toBe(0)
-    expect(states[1].id).toBe(3)
-    expect(states[2].id).toBe(4)
-    expect(states[0].transitions.length).toBe(2)
-    expect(states[1].transitions.length).toBe(1)
-    expect(states[2].transitions.length).toBe(0)
-    const f = (a: number, b: number) => a - b
-    expect(states[0].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([0, 1])
-    expect(states[1].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([1])
-    expect(states[2].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([])
-    expect(states[0].transitions.map(x => x.state.id).sort(f)).toEqual([3, 3])
-    expect(states[1].transitions.map(x => x.state.id).sort(f)).toEqual([4])
-    expect(states[2].transitions.map(x => x.state.id).sort(f)).toEqual([])
-    expect(states[0].is_final).toBe(false)
-    expect(states[1].is_final).toBe(false)
-    expect(states[2].is_final).toBe(true)
-})
-
-test('state-remove-non-determinism-case-3', () => {
-    const context = new Context()
-    const [s0, s1, s2] = [context.create_new_state(), context.create_new_state(), context.create_new_state()]
-    const [a, b, c] = [new SingleSymbol(0), new SingleSymbol(1), new SingleSymbol(2)]
-    s2.is_final = true
-    s0.add_transition(a, s0)
-    s1.add_transition(b, s1)
-    s2.add_transition(c, s2)
-    s0.add_epsilon_transition(s1)
-    s1.add_epsilon_transition(s2)
-    s0.remove_non_determinism(context)
-    const states = s0.get_transitively_reachable_states().sort((a: State, b: State) => a.id - b.id)
-    expect(states.length).toBe(3)
-    expect(states[0].id).toBe(0)
-    expect(states[1].id).toBe(1)
-    expect(states[2].id).toBe(2)
-    expect(states[0].transitions.length).toBe(3)
-    expect(states[1].transitions.length).toBe(2)
-    expect(states[2].transitions.length).toBe(1)
-    const f = (a: number, b: number) => a - b
-    expect(states[0].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([0, 1, 2])
-    expect(states[1].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([1, 2])
-    expect(states[2].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([2])
-    expect(states[0].transitions.map(x => x.state.id).sort(f)).toEqual([0, 1, 2])
-    expect(states[1].transitions.map(x => x.state.id).sort(f)).toEqual([1, 2])
-    expect(states[2].transitions.map(x => x.state.id).sort(f)).toEqual([2])
-    expect(states[0].is_final).toBe(true)
-    expect(states[1].is_final).toBe(true)
-    expect(states[2].is_final).toBe(true)
+    test('two-transitions-same-symbol', () => {
+        const context = new Context()
+        const symbol = new SingleSymbol(1)
+        const state_0 = context.create_new_state()
+        const state_1 = context.create_new_state()
+        const state_2 = context.create_new_state()
+        state_0.add_transition(symbol, state_1)
+        state_0.add_transition(symbol, state_2)
+        state_1.is_final = true
+        state_0.remove_non_determinism(context)
+        expect(state_0.is_final).toBeFalsy()
+        expect(state_0.transitions).toHaveLength(1)
+        expect(state_0.transitions[0].state.is_final).toBeTruthy()
+    })
+    
+    test('case-0', () => {
+        const context = new Context()
+        const [s0, s1, s2] = [context.create_new_state(), context.create_new_state(), context.create_new_state()]
+        const a = new SingleSymbol(0)
+        const b = new SingleSymbol(1)
+        s2.is_final = true
+        s0.add_transition(a, s0)
+        s0.add_transition(b, s1)
+        s1.add_transition(a, s1)
+        s1.add_transition(a, s2)
+        s1.add_transition(b, s1)
+        s2.add_transition(a, s2)
+        s2.add_transition(b, s2)
+        s2.add_transition(b, s1)
+        s0.remove_non_determinism(context)
+        const states = s0.get_transitively_reachable_states().sort((a: State, b: State) => a.id - b.id)
+        expect(states.length).toBe(3)
+        expect(states[0].id).toBe(0)
+        expect(states[1].id).toBe(1)
+        expect(states[2].id).toBe(3)
+        expect(states[0].transitions.length).toBe(2)
+        expect(states[1].transitions.length).toBe(2)
+        expect(states[2].transitions.length).toBe(2)
+        const f = (a: number, b: number) => a - b
+        expect(states[0].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([0, 1])
+        expect(states[1].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([0, 1])
+        expect(states[2].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([0, 1])
+        expect(states[0].transitions.map(x => x.state.id).sort(f)).toEqual([0, 1])
+        expect(states[1].transitions.map(x => x.state.id).sort(f)).toEqual([1, 3])
+        expect(states[2].transitions.map(x => x.state.id).sort(f)).toEqual([3, 3])
+        expect(states[0].is_final).toBe(false)
+        expect(states[1].is_final).toBe(false)
+        expect(states[2].is_final).toBe(true)
+    })
+    
+    test('case-1', () => {
+        const context = new Context()
+        const [s0, s1] = [context.create_new_state(), context.create_new_state()]
+        const a = new SingleSymbol(0)
+        const b = new SingleSymbol(1)
+        s1.is_final = true
+        s0.add_transition(a, s0)
+        s0.add_transition(a, s1)
+        s0.add_transition(b, s1)
+        s1.add_transition(b, s1)
+        s1.add_transition(b, s0)
+        s0.remove_non_determinism(context)
+        const states = s0.get_transitively_reachable_states().sort((a: State, b: State) => a.id - b.id)
+        expect(states.length).toBe(3)
+        expect(states[0].id).toBe(0)
+        expect(states[1].id).toBe(1)
+        expect(states[2].id).toBe(2)
+        expect(states[0].transitions.length).toBe(2)
+        expect(states[1].transitions.length).toBe(1)
+        expect(states[2].transitions.length).toBe(2)
+        const f = (a: number, b: number) => a - b
+        expect(states[0].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([0, 1])
+        expect(states[1].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([1])
+        expect(states[2].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([0, 1])
+        expect(states[0].transitions.map(x => x.state.id).sort(f)).toEqual([1, 2])
+        expect(states[1].transitions.map(x => x.state.id).sort(f)).toEqual([2])
+        expect(states[2].transitions.map(x => x.state.id).sort(f)).toEqual([2, 2])
+        expect(states[0].is_final).toBe(false)
+        expect(states[1].is_final).toBe(true)
+        expect(states[2].is_final).toBe(true)
+    })
+    
+    test('case-2', () => {
+        const context = new Context()
+        const [s0, s1, s2, s3, s4] = [context.create_new_state(), context.create_new_state(), context.create_new_state(), context.create_new_state(), context.create_new_state()]
+        const [a, b] = [new SingleSymbol(0), new SingleSymbol(1)]
+        s4.is_final = true
+        s0.add_epsilon_transition(s1)
+        s0.add_epsilon_transition(s2)
+        s1.add_transition(a, s3)
+        s2.add_transition(b, s3)
+        s3.add_transition(b, s4)
+        s0.remove_non_determinism(context)
+        const states = s0.get_transitively_reachable_states().sort((a: State, b: State) => a.id - b.id)
+        expect(states.length).toBe(3)
+        expect(states[0].id).toBe(0)
+        expect(states[1].id).toBe(3)
+        expect(states[2].id).toBe(4)
+        expect(states[0].transitions.length).toBe(2)
+        expect(states[1].transitions.length).toBe(1)
+        expect(states[2].transitions.length).toBe(0)
+        const f = (a: number, b: number) => a - b
+        expect(states[0].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([0, 1])
+        expect(states[1].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([1])
+        expect(states[2].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([])
+        expect(states[0].transitions.map(x => x.state.id).sort(f)).toEqual([3, 3])
+        expect(states[1].transitions.map(x => x.state.id).sort(f)).toEqual([4])
+        expect(states[2].transitions.map(x => x.state.id).sort(f)).toEqual([])
+        expect(states[0].is_final).toBe(false)
+        expect(states[1].is_final).toBe(false)
+        expect(states[2].is_final).toBe(true)
+    })
+    
+    test('case-3', () => {
+        const context = new Context()
+        const [s0, s1, s2] = [context.create_new_state(), context.create_new_state(), context.create_new_state()]
+        const [a, b, c] = [new SingleSymbol(0), new SingleSymbol(1), new SingleSymbol(2)]
+        s2.is_final = true
+        s0.add_transition(a, s0)
+        s1.add_transition(b, s1)
+        s2.add_transition(c, s2)
+        s0.add_epsilon_transition(s1)
+        s1.add_epsilon_transition(s2)
+        s0.remove_non_determinism(context)
+        const states = s0.get_transitively_reachable_states().sort((a: State, b: State) => a.id - b.id)
+        expect(states).toHaveLength(3)
+        expect(states[0].id).toBe(0)
+        expect(states[1].id).toBe(1)
+        expect(states[2].id).toBe(2)
+        expect(states[0].transitions).toHaveLength(3)
+        expect(states[1].transitions).toHaveLength(2)
+        expect(states[2].transitions).toHaveLength(1)
+        const f = (a: number, b: number) => a - b
+        expect(states[0].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([0, 1, 2])
+        expect(states[1].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([1, 2])
+        expect(states[2].transitions.map(x => (x.symbol! as any).set.to_array()).map((x: any) => x[0]).sort(f)).toEqual([2])
+        expect(states[0].transitions.map(x => x.state.id).sort(f)).toEqual([0, 1, 2])
+        expect(states[1].transitions.map(x => x.state.id).sort(f)).toEqual([1, 2])
+        expect(states[2].transitions.map(x => x.state.id).sort(f)).toEqual([2])
+        expect(states[0].is_final).toBe(true)
+        expect(states[1].is_final).toBe(true)
+        expect(states[2].is_final).toBe(true)
+    })
 })
 
 test('state-match-a*', () => {
