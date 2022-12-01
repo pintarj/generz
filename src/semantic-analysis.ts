@@ -77,6 +77,14 @@ export function analyze(file: string, source: Source): void {
         throw new CodeError(file, source.location, `No variables declared. At least one required.`)
     }
 
+    // Detects if there are variable without terminals and are not epsilon.
+
+    for (const variable of variables.values()) {
+        if (variable.productions.length === 0) {
+            throw new CodeError(file, variable.location, `Variable \`${variable.name}\` has no productions. At least one required.`)
+        }
+    }
+
     // Detects usage of undeclared terminals/variables.
 
     for (const variable of variables.values()) {

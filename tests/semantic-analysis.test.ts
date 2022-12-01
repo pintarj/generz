@@ -54,6 +54,18 @@ test('no-variables', () => {
     expect(() => analyze(source)).toThrow('No variables declared. At least one required.')
 })
 
+describe('variable-with-no-productions', () => {
+    test('simple', () => {
+        const source = 'variable X {}'
+        expect(() => analyze(source)).toThrow('Variable \`X\` has no productions. At least one required.')
+    })
+
+    test('but-epsilon', () => {
+        const source = 'variable X {epsilon}'
+        expect(() => analyze(source)).toThrow('Variable \`X\` has no productions. At least one required.')
+    })
+})
+
 test('undeclared-terminal', () => {
     const source = dedent`
         variable X {
