@@ -14,6 +14,7 @@ import { State } from '@dist/regex/state'
 import { Transition } from '@dist/regex/transition'
 import { SingleSymbol } from '@dist/regex/single-symbol'
 import { Context } from '@dist/regex/context'
+import { Delimiter } from '@dist/ast/delimiter'
 
 function loc(start_line: number, start_column: number, end_line: number, end_column: number): Location {
     return new Location(
@@ -43,47 +44,27 @@ test('invalid-end', () => {
     expect(() => parse_from_source(source)).toThrowError("expected token `EOF`, but found `IDENTIFIER`")
 })
 
-describe('variables', () => {
-    describe('single', () => {
-        test('empty', () => {
-            const source = `variable X {}`
-            const ast = parse_from_source(source)
-    
-            expect(ast).toEqual(new Source(loc(1, 1, 1, 14), [
-                new Variable(loc(1, 1, 1, 13), 'X', [])
-            ]))
-        })
+describe('delimiters', () => {
+    test('single', () => {
+        const source = `delimiter /a/`
+        const ast = parse_from_source(source)
 
-        test('epsilon', () => {
-            const source = `variable X {epsilon}`
-            const ast = parse_from_source(source)
-    
-            expect(ast).toEqual(new Source(loc(1, 1, 1, 21), [
-                new Variable(loc(1, 1, 1, 20), 'X', [
-                    Production.create_epsilon(loc(1, 1, 1, 1))
-                ])
-            ]))
-        })
+        expect(ast.location).toEqual(loc(1, 1, 1, 14))
+        expect(ast.declarations).toHaveLength(1)
+        expect(ast.declarations[0].location).toEqual(loc(1, 1, 1, 13))
+        expect((ast.declarations[0] as Delimiter).regex.match('aa')).toEqual('a')
     })
 
-    describe('multiple', () => {
-        test('empty', () => {
-            const source = `variable X {} variable X {}\nvariable Y {}`
-            const ast = parse_from_source(source)
-    
-            expect(ast).toEqual(new Source(loc(1, 1, 2, 14), [
-                new Variable(loc(1, 1, 1, 13), 'X', []),
-                new Variable(loc(1, 15, 1, 27), 'X', []),
-                new Variable(loc(2, 1, 2, 13), 'Y', [])
-            ]))
-        })
-    })
+    test('multi', () => {
+        const source = `delimiter /a/ delimiter /bb/`
+        const ast = parse_from_source(source)
 
-    describe('productions', () => {
-        test('empty', () => {
-            const source = `variable X { production }`
-            expect(() => parse_from_source(source)).toThrow('Expected at least one `PRODUCTION_NODE`, but zero found.')
-        })
+        expect(ast.location).toEqual(loc(1, 1, 1, 29))
+        expect(ast.declarations).toHaveLength(2)
+        expect(ast.declarations[0].location).toEqual(loc(1, 1, 1, 13))
+        expect((ast.declarations[0] as Delimiter).regex.match('aa')).toEqual('a')
+        expect(ast.declarations[1].location).toEqual(loc(1, 15, 1, 28))
+        expect((ast.declarations[1] as Delimiter).regex.match('bb')).toEqual('bb')
     })
 })
 
@@ -152,15 +133,16 @@ test('complex', () => {
 
         terminal minus /m/
         terminal x
+        delimiter /o/
     `
     const ast = parse_from_source(source)
     const declarations = (ast as Source)?.declarations
 
     declarations
-        .filter((x): x is Terminal => x.is_terminal())
+        .filter((x): x is Terminal|Delimiter => x.is_terminal() || x.is_delimiter())
         .forEach(x => set_id_of_states_in_regex_to_0(x.regex))
 
-    expect(ast).toEqual(new Source(loc(1, 1, 10, 11), [
+    expect(ast).toEqual(new Source(loc(1, 1, 11, 14), [
         new Variable(loc(1, 1, 5, 1), "Statement", [
             Production.create_epsilon(loc(2, 5, 2, 11)),
             new Production(loc(3, 5, 3, 31), [
@@ -181,6 +163,11 @@ test('complex', () => {
         new Terminal(loc(10, 1, 10, 10), 'x', Object.assign(new State(0), {
             transitions: [
                 new Transition(new SingleSymbol('x'.codePointAt(0)!), new State(0, {is_final: true}))
+            ]
+        })),
+        new Delimiter(loc(11, 1, 11, 13), Object.assign(new State(0), {
+            transitions: [
+                new Transition(new SingleSymbol('o'.codePointAt(0)!), new State(0, {is_final: true}))
             ]
         }))
     ]))

@@ -13,6 +13,8 @@ import { RegularExpression } from './regular-expression'
 import { Context } from './regex/context'
 import { StringReader } from './reader'
 import { SourceReader } from './source/source-reader'
+import { Delimiter } from './ast/delimiter'
+import { Declaration } from './ast/declaration'
 
 class SyntaxParser {
     private index: number
@@ -100,8 +102,26 @@ class SyntaxParser {
         }
     }
 
-    private parse_declarations(): Terminal|Variable|undefined {
+    private parse_declarations(): Declaration|undefined {
         switch (this.current_symbol.type) {
+            case SymbolType.DELIMITER: {
+                const start = this.consume().location.get_location().start
+                const regex_symbol = this.require(SymbolType.REGEX)
+                const end = regex_symbol.location.get_location().end
+
+                const reader = new SourceReader(new StringReader(regex_symbol.lexeme.slice(1, -1)), {
+                    file: this.file,
+                    location_offset: start
+                })
+
+                const regex = (new RegularExpression(reader, {context: this.regex_context})).generate()   
+
+                return new Delimiter(
+                    new Location(start, end),
+                    regex
+                )
+            }
+
             case SymbolType.TERMINAL: {
                 const start = this.consume().location.get_location().start
                 const name_symbol = this.require(SymbolType.IDENTIFIER)
