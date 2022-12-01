@@ -1,4 +1,5 @@
 import { DeclarationType } from './ast/declaration'
+import { Delimiter } from './ast/delimiter'
 import { ProductionNode, ProductionNodeType } from './ast/production-node'
 import { Source } from './ast/source'
 import { Terminal } from './ast/terminal'
@@ -20,6 +21,7 @@ function starts_with_lowercase(name: string): boolean {
 export function analyze(file: string, source: Source): void {
     const terminals = new Map<string, Terminal>()
     const variables = new Map<string, Variable>()
+    let delimiter: Delimiter|undefined
 
     // Populates `terminals` and `variables` maps.
     // Detects declaration names that trasgress naming convention.
@@ -29,13 +31,22 @@ export function analyze(file: string, source: Source): void {
         const name = declaration.name
 
         switch (declaration.type) {
+            case DeclarationType.DELIMITER: {
+                if (delimiter !== undefined) {
+                    throw new CodeError(file, declaration.location, `Duplicate delimiter declaration detected. Firstly declared at ${delimiter.location}.`)
+                } else {
+                    delimiter = declaration as Delimiter
+                }
+                break
+            }
+
             case DeclarationType.TERMINAL: {
                 if (!starts_with_lowercase(name))
                     throw new CodeError(file, declaration.location, `Declared terminal \`${name}\` have to start with a lower-case letter.`)
 
                 if (terminals.has(name)) {
                     const other = terminals.get(name)!
-                    throw new CodeError(file, declaration.location, `Duplicate terminal name \`${name}\` detected. Firstly used at ${other?.location}.`)
+                    throw new CodeError(file, declaration.location, `Duplicate terminal \`${name}\` declaration detected. Firstly declared at ${other.location}.`)
                 }
 
                 terminals.set(name, declaration as Terminal)
@@ -48,7 +59,7 @@ export function analyze(file: string, source: Source): void {
 
                 if (variables.has(name)) {
                     const other = variables.get(name)!
-                    throw new CodeError(file, declaration.location, `Duplicate variable name \`${name}\` detected. Firstly used at ${other?.location}.`)
+                    throw new CodeError(file, declaration.location, `Duplicate variable \`${name}\` declaration detected. Firstly declared at ${other.location}.`)
                 }
 
                 variables.set(name, declaration as Variable)

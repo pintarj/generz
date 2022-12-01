@@ -11,6 +11,15 @@ function analyze(source: string): void {
     semantic_analyze(file, syntax_parse(new Context(), file, lexical_parse(new SourceReader(new StringReader(source)))))
 }
 
+test('duplicate-delimiter', () => {
+    const source = dedent`
+        delimiter /a/
+        delimiter /b/
+    `
+
+    expect(() => analyze(source)).toThrow('Duplicate delimiter declaration detected.')
+})
+
 test('upper-case-terminal', () => {
     const source = 'terminal X'
     expect(() => analyze(source)).toThrow('Declared terminal `X` have to start with a lower-case letter.')
@@ -22,7 +31,7 @@ test('duplicate-terminal-name', () => {
         terminal hello /moto/
     `
 
-    expect(() => analyze(source)).toThrow('Duplicate terminal name `hello` detected. Firstly used at 1:1-1:14.')
+    expect(() => analyze(source)).toThrow('Duplicate terminal `hello` declaration detected.')
 })
 
 test('lower-case-variable', () => {
@@ -36,7 +45,7 @@ test('duplicate-variable-name', () => {
         variable World {epsilon}
     `
 
-    expect(() => analyze(source)).toThrow('Duplicate variable name `World` detected. Firstly used at 1:1-1:17.')
+    expect(() => analyze(source)).toThrow('Duplicate variable `World` declaration detected.')
 })
 
 test('undeclared-terminal', () => {
