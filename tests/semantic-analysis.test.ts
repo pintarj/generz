@@ -48,6 +48,12 @@ test('duplicate-variable-name', () => {
     expect(() => analyze(source)).toThrow('Duplicate variable `World` declaration detected.')
 })
 
+test('no-variables', () => {
+    const source = ''
+
+    expect(() => analyze(source)).toThrow('No variables declared. At least one required.')
+})
+
 test('undeclared-terminal', () => {
     const source = dedent`
         variable X {

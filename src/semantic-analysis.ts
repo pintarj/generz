@@ -71,6 +71,12 @@ export function analyze(file: string, source: Source): void {
         }
     }
 
+    // Detects if there are no variable at all.
+
+    if (variables.size === 0) {
+        throw new CodeError(file, source.location, `No variables declared. At least one required.`)
+    }
+
     // Detects usage of undeclared terminals/variables.
 
     for (const variable of variables.values()) {
