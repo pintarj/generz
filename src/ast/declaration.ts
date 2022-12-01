@@ -2,10 +2,12 @@ import { Node } from './node'
 import { Location } from '../source/location'
 import { Variable } from './variable'
 import { Terminal } from './terminal'
+import { Delimiter } from './delimiter'
 
 export enum DeclarationType {
     TERMINAL = 'TERMINAL',
-    VARIABLE = 'VARIABLE'
+    VARIABLE = 'VARIABLE',
+    DELIMITER = 'DELIMITER'
 }
 
 export abstract class Declaration extends Node {
@@ -23,5 +25,9 @@ export abstract class Declaration extends Node {
 
     public is_terminal(): this is Terminal {
         return this.type === DeclarationType.TERMINAL
+    }
+
+    public is_delimiter(): this is Delimiter {
+        return this.type === DeclarationType.DELIMITER
     }
 }
