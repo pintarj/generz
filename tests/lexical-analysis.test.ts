@@ -67,6 +67,20 @@ test('parse-regex', () => {
     }])
 })
 
+test('parse-delimiter', () => {
+    const source = `delimiter`
+    const result = parse(new SourceReader(new StringReader(source)))
+    expect(result).toStrictEqual([{
+        type: SymbolType.DELIMITER,
+        location: new Location(new Point(1, 1), new Point(1, 9)),
+        lexeme: 'delimiter'
+    }, {
+        type: SymbolType.EOF,
+        location: new Point(1, 10),
+        lexeme: ''
+    }])
+})
+
 test('parse-terminal', () => {
     const source = `terminal`
     const result = parse(new SourceReader(new StringReader(source)))

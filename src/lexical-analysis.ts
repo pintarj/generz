@@ -4,6 +4,7 @@ import { CodeError } from './error'
 
 export enum SymbolType {
     IDENTIFIER,
+    DELIMITER,
     TERMINAL,
     REGEX,
     VARIABLE,
@@ -78,10 +79,16 @@ export function parse(reader: SourceReader): Symbol[] {
                 location = new Location(location as Point, last_point)
 
             switch (lexeme) {
+                case 'delimiter': {
+                    type = SymbolType.DELIMITER
+                    break
+                }
+
                 case 'terminal': {
                     type = SymbolType.TERMINAL
                     break
                 }
+
                 case 'variable': {
                     type = SymbolType.VARIABLE
                     break
