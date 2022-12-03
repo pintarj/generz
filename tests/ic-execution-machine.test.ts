@@ -1,4 +1,5 @@
 import { IcExecutionMachine, Scope } from '@dist/ic-execution-machine'
+import { Assignment } from '@dist/ic/assignment'
 import { Atom } from '@dist/ic/atom'
 import { BinaryOperation, Operator } from '@dist/ic/binary-operation'
 import { Expression } from '@dist/ic/expression'
@@ -91,6 +92,28 @@ describe('evaluate', () => {
         })
         machine.execute(variable.to_statement())
         expect(machine.evaluate(variable.get_reference())).toBe(78)
+    })
+})
+
+describe('execute', () => {
+    test('variable-declaration', () => {
+        const machine = new IcExecutionMachine()
+        const variable = new VariableDeclaration(VariableType.I32, 'a', {
+            initial_value: new Atom(-99)
+        })
+        machine.execute(variable.to_statement())
+        expect(machine.global_scope.get_variable('a').value).toBe(-99)
+    })
+
+    test('assignment', () => {
+        const machine = new IcExecutionMachine()
+        const variable = new VariableDeclaration(VariableType.I32, 'a', {
+            initial_value: new Atom(1)
+        })
+        machine.execute(variable.to_statement())
+        expect(machine.global_scope.get_variable('a').value).toBe(1)
+        machine.execute(new Assignment(variable.get_reference(), new Atom(2)))
+        expect(machine.global_scope.get_variable('a').value).toBe(2)
     })
 })
 

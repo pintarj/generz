@@ -1,3 +1,4 @@
+import { Assignment } from './ic/assignment'
 import { Atom } from './ic/atom'
 import { BinaryOperation, Operator } from './ic/binary-operation'
 import { DeclarationStatement } from './ic/declaration-statement'
@@ -42,7 +43,7 @@ export class Scope {
 }
 
 export class IcExecutionMachine {
-    private readonly global_scope: Scope
+    public readonly global_scope: Scope
 
     public constructor() {
         this.global_scope = new Scope()
@@ -89,8 +90,11 @@ export class IcExecutionMachine {
         }
     ): void {
         const scope = options?.scope || this.global_scope
-
-        if (s instanceof DeclarationStatement) {
+        
+        if (s instanceof Assignment) {
+            const variable = scope.get_variable(s.variable_reference.target.name)
+            variable.value = this.evaluate(s.expression, {scope})
+        } else if (s instanceof DeclarationStatement) {
             const d = s.declaration
 
             if (d instanceof VariableDeclaration) {
