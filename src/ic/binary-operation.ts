@@ -1,6 +1,10 @@
 import { Expression, ExpressionConstructorOptions } from './expression'
 
 export enum Operator {
+    PLUS,
+    MINUS,
+    MULTIPLY,
+    DIVIDE,
     OR,
     AND,
     EQUAL,
