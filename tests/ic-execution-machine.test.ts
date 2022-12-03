@@ -1,4 +1,4 @@
-import { IcExecutionMachine } from '@dist/ic-execution-machine'
+import { IcExecutionMachine, Scope } from '@dist/ic-execution-machine'
 import { Atom } from '@dist/ic/atom'
 import { BinaryOperation, Operator } from '@dist/ic/binary-operation'
 import { Expression } from '@dist/ic/expression'
@@ -92,6 +92,38 @@ describe('evaluate', () => {
         machine.execute(variable.to_statement())
         expect(machine.evaluate(variable.get_reference())).toBe(78)
     })
+})
 
+describe('scope', () => {
+    describe('variables', () => {
+        test('circle', () => {
+            const scope = new Scope()
+            scope.declare_variable('y', VariableType.I32, 11)
+            expect(scope.get_variable('y').value).toBe(11)
+        })
 
+        test('not-declared', () => {
+            const scope = new Scope()
+            expect(() => scope.get_variable('x')).toThrow('not declared')
+        })
+
+        test('duplicate', () => {
+            const scope = new Scope()
+            scope.declare_variable('x', VariableType.I32, 3)
+            expect(() => scope.declare_variable('x', VariableType.I32, 5)).toThrow('duplicate')
+        })
+    
+        test('parent', () => {
+            const scope_0 = new Scope()
+            const scope_1 = new Scope({parent: scope_0})
+            scope_0.declare_variable('y', VariableType.I32, 11)
+            expect(scope_1.get_variable('y').value).toBe(11)
+        })
+
+        test('parent-undeclared', () => {
+            const scope_0 = new Scope()
+            const scope_1 = new Scope({parent: scope_0})
+            expect(() => scope_1.get_variable('y')).toThrow('not declared')
+        })
+    })
 })

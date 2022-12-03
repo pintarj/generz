@@ -7,9 +7,15 @@ import { VariableDeclaration, VariableType } from './ic/variable-declaration'
 import { VariableReference } from './ic/variable-reference'
 
 export class Scope {
+    private readonly parent: Scope|undefined
     private readonly variables: Map<string, {type: VariableType, value: any}>
 
-    public constructor() {
+    public constructor(
+        options?: {
+            parent?: Scope
+        }
+    ) {
+        this.parent = options?.parent
         this.variables = new Map()
     }
 
@@ -23,8 +29,13 @@ export class Scope {
     public get_variable(name: string): {type: VariableType, value: any} {
         const variable = this.variables.get(name)
 
-        if (variable === undefined)
-            throw new Error(`variable \`${name}\` is not declared`)
+        if (variable === undefined) {
+            if (this.parent === undefined) {
+                throw new Error(`variable \`${name}\` is not declared`)
+            } else {
+                return this.parent.get_variable(name)
+            }
+        }
 
         return variable
     }
