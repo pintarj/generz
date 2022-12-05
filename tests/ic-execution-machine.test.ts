@@ -34,6 +34,62 @@ describe('evaluate', () => {
             expect(f(true, true)).toBe(true)
         })
 
+        test('or-chaining', () => {
+            const f = (l: boolean, r: boolean) => {
+                let counter = 0
+                const machine = new IcExecutionMachine()
+
+                machine.global_scope.declare_function('f', (x: boolean) => {
+                    counter += 1
+                    return x
+                })
+
+                return [
+                    machine.evaluate(
+                        new BinaryOperation(
+                            Operator.OR,
+                            new FunctionCall('f', {args: [new Atom(l)]}),
+                            new FunctionCall('f', {args: [new Atom(r)]})
+                        )
+                    ),
+                    counter
+                ]
+            }
+            
+            expect(f(false, false)).toEqual([false, 2])
+            expect(f(false, true)).toEqual([true, 2])
+            expect(f(true,  false)).toEqual([true, 1])
+            expect(f(true,  true)).toEqual([true, 1])
+        })
+
+        test('and-chaining', () => {
+            const f = (l: boolean, r: boolean) => {
+                let counter = 0
+                const machine = new IcExecutionMachine()
+
+                machine.global_scope.declare_function('f', (x: boolean) => {
+                    counter += 1
+                    return x
+                })
+
+                return [
+                    machine.evaluate(
+                        new BinaryOperation(
+                            Operator.AND,
+                            new FunctionCall('f', {args: [new Atom(l)]}),
+                            new FunctionCall('f', {args: [new Atom(r)]})
+                        )
+                    ),
+                    counter
+                ]
+            }
+            
+            expect(f(false, false)).toEqual([false, 1])
+            expect(f(false, true)).toEqual([false, 1])
+            expect(f(true,  false)).toEqual([false, 2])
+            expect(f(true,  true)).toEqual([true, 2])
+        })
+
         test('and', () => {
             const f = (l: any, r: any) => evaluate(new BinaryOperation(Operator.AND, new Atom(l), new Atom(r)))
             expect(f(false, false)).toBe(false)

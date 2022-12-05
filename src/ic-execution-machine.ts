@@ -104,7 +104,13 @@ export class IcExecutionMachine {
         if (e instanceof Atom) {
             return e.value
         } else if (e instanceof BinaryOperation) {
-            const left  = this.evaluate(e.left_operand,  {scope})
+            const left = this.evaluate(e.left_operand, {scope})
+
+            switch (e.operator) {
+                case Operator.OR:  return left || this.evaluate(e.right_operand, {scope})
+                case Operator.AND: return left && this.evaluate(e.right_operand, {scope})
+            }
+            
             const right = this.evaluate(e.right_operand, {scope})
 
             switch (e.operator) {
@@ -112,8 +118,6 @@ export class IcExecutionMachine {
                 case Operator.MINUS:                 return left -   right
                 case Operator.MULTIPLY:              return left *   right
                 case Operator.DIVIDE:                return Math.floor(left / right)
-                case Operator.OR:                    return left ||  right
-                case Operator.AND:                   return left &&  right
                 case Operator.EQUAL:                 return left === right
                 case Operator.NOT_EQUAL:             return left !== right
                 case Operator.LESS_THAN:             return left <   right
