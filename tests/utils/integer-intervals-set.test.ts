@@ -49,6 +49,29 @@ test('interval-contains', () => {
     expect(i.contains(100)).toBe(false)
 })
 
+test('size', () => {
+    const set = new IntegerIntervalsSet()
+    expect(set.size).toEqual(0)
+
+    set.add(2)
+    expect(set.size).toEqual(1)
+
+    set.add(-4)
+    expect(set.size).toEqual(2)
+
+    set.add(32)
+    expect(set.size).toEqual(3)
+
+    set.add(32)
+    expect(set.size).toEqual(3)
+
+    set.add(-4)
+    expect(set.size).toEqual(3)
+
+    set.add(new IntegerInterval(-128, 128))
+    expect(set.size).toEqual(256)
+})
+
 test('interval-set-capacity', () => {
     const set = new IntegerIntervalsSet()
     const intervals = set.get_intervals()

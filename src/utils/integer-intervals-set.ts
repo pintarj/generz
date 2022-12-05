@@ -133,6 +133,13 @@ export class IntegerIntervalsSet {
     }
 
     /**
+     * The number of elements in the set.
+     */
+    public get size(): number {
+        return this.intervals.reduce((sum, interval) => sum + interval.length, 0)
+    }
+
+    /**
      * Returns the number of stored intervals.
      */
     public get capacity(): number {
