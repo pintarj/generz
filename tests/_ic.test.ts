@@ -5,6 +5,7 @@ import { Break } from '@dist/ic/break'
 import { Continue } from '@dist/ic/continue'
 import { Declaration } from '@dist/ic/declaration'
 import { DeclarationStatement } from '@dist/ic/declaration-statement'
+import { DoWhile } from '@dist/ic/do-while'
 import { Expression } from '@dist/ic/expression'
 import { ExpressionStatement } from '@dist/ic/expression-statement'
 import { Function } from '@dist/ic/function'
@@ -266,6 +267,17 @@ test('while', () => {
     const condition = new Atom(true)
     const body = new Continue()
     const w = new While(condition, body, {comment})
+    expect(w.node_type).toEqual(ICNodeType.STATEMENT)
+    expect(w.condition).toEqual(condition)
+    expect(w.body).toEqual(body)
+    expect(w.comment).toEqual(comment)
+})
+
+test('do-while', () => {
+    const comment = 'loop'
+    const condition = new Atom(true)
+    const body = new Continue()
+    const w = new DoWhile(condition, body, {comment})
     expect(w.node_type).toEqual(ICNodeType.STATEMENT)
     expect(w.condition).toEqual(condition)
     expect(w.body).toEqual(body)
