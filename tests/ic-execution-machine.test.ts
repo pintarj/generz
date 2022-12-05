@@ -4,6 +4,7 @@ import { Atom } from '@dist/ic/atom'
 import { BinaryOperation, Operator } from '@dist/ic/binary-operation'
 import { Break } from '@dist/ic/break'
 import { Continue } from '@dist/ic/continue'
+import { DoWhile } from '@dist/ic/do-while'
 import { Expression } from '@dist/ic/expression'
 import { ExpressionStatement } from '@dist/ic/expression-statement'
 import { Function } from '@dist/ic/function'
@@ -253,6 +254,26 @@ describe('execute', () => {
         expect(machine.evaluate(i_var.get_reference())).toBe(10)
         expect(machine.evaluate(x_var.get_reference())).toBe(20)
     })
+
+    test('do-while', () => {
+        const machine = new IcExecutionMachine()
+        const x_var = new VariableDeclaration(VariableType.I32, 'x', {
+            initial_value: new Atom(0)
+        })
+        machine.execute(x_var.to_statement())
+
+        machine.execute(new DoWhile(
+            new Atom(false),
+            new Statements([
+                new Assignment(
+                    x_var.get_reference(),
+                    new BinaryOperation(Operator.PLUS, x_var.get_reference(), new Atom(2))
+                )
+            ])
+        ))
+
+        expect(machine.evaluate(x_var.get_reference())).toBe(2)
+    })
 })
 
 describe('scopes', () => {
@@ -425,6 +446,34 @@ describe('scopes', () => {
             ])))
 
             expect(() => machine.global_scope.get_variable('x')).toThrow('not declared')
+        })
+    })
+
+    describe('do-while', () => {
+        test('shadowing', () => {
+            const machine = new IcExecutionMachine()
+            const x_var = new VariableDeclaration(VariableType.I32, 'x', {
+                initial_value: new Atom(0)
+            })
+
+            let stored: number|undefined
+
+            machine.global_scope.declare_function('store', (...args: any[]) => {
+                stored = args[0]
+            })
+
+            machine.execute(x_var.to_statement())
+            expect(machine.evaluate(x_var.get_reference())).toEqual(0)
+
+            machine.execute(new DoWhile(new Atom(true), new Statements([
+                x_var.to_statement(),
+                new Assignment(x_var.get_reference(), new Atom(118)),
+                new FunctionCall('store', {args: [x_var.get_reference()]}).to_statement(),
+                new Break()
+            ])))
+
+            expect(machine.evaluate(x_var.get_reference())).toEqual(0)
+            expect(stored).toEqual(118)
         })
     })
 

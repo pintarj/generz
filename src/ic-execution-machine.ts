@@ -4,6 +4,7 @@ import { BinaryOperation, Operator } from './ic/binary-operation'
 import { Break } from './ic/break'
 import { Continue } from './ic/continue'
 import { DeclarationStatement } from './ic/declaration-statement'
+import { DoWhile } from './ic/do-while'
 import { Expression } from './ic/expression'
 import { ExpressionStatement } from './ic/expression-statement'
 import { Function } from './ic/function'
@@ -216,6 +217,21 @@ export class IcExecutionMachine {
                     return value
                 }
             }
+        } else if (s instanceof DoWhile) {
+            do {
+                const while_scope = scope.create_child()
+                const value = this.execute(s.body, {scope: while_scope})
+
+                if (value !== undefined) {
+                    if (value.type === 'continue')
+                        continue
+
+                    if (value.type === 'break')
+                        break
+
+                    return value
+                }
+            } while (this.evaluate(s.condition, {scope}))
         } else {
             throw new Error('lack of implementation')
         }
