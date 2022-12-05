@@ -32,8 +32,9 @@ export function regex_to_ic(
     })
 
     const input_var = new VariableDeclaration(VariableType.I32, 'input', {
-        initial_value: new FunctionCall('next'),
-        comment: 'Contains the current input of the machine.'
+        mutable: true,
+        initial_value: new Atom(-1),
+        comment: 'Will contain the current input of the machine.'
     })
 
     const state_ref = state_var.get_reference()
@@ -84,7 +85,7 @@ export function regex_to_ic(
             }
 
             state_body = new Statements([
-                input_var.to_statement(),
+                new Assignment(input_ref, new FunctionCall('next')),
                 state_body
             ])
         }
@@ -109,6 +110,7 @@ export function regex_to_ic(
     }
 
     return new Statements([
+        input_var.to_statement(),
         state_var.to_statement(),
         new While(new Atom(true), states_switch)
     ])
