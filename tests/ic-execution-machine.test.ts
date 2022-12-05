@@ -598,31 +598,39 @@ describe('functions', () => {
         const x_param = new VariableDeclaration(VariableType.I32, 'x')
         const fib = new Function('fib', [x_param], VariableType.I32,
             new If(
-                new BinaryOperation(Operator.LESS_THAN_OR_EQUAL, x_param.get_reference(), new Atom(1)),
-                new Return(new Atom(1)),
-                {else_body: new Return(
-                    new BinaryOperation(
-                        Operator.PLUS,
-                        x_param.get_reference(),
-                        new FunctionCall('fib', {args: [
-                            new BinaryOperation(Operator.MINUS, x_param.get_reference(), new Atom(1))
-                        ]})
+                new BinaryOperation(Operator.LESS_THAN_OR_EQUAL, x_param.get_reference(), new Atom(0)),
+                new Return(new Atom(0)),
+                {else_body:
+                    new If(
+                        new BinaryOperation(Operator.EQUAL, x_param.get_reference(), new Atom(1)),
+                        new Return(new Atom(1)),
+                        {else_body: new Return(
+                            new BinaryOperation(
+                                Operator.PLUS,
+                                new FunctionCall('fib', {args: [
+                                    new BinaryOperation(Operator.MINUS, x_param.get_reference(), new Atom(1))
+                                ]}),
+                                new FunctionCall('fib', {args: [
+                                    new BinaryOperation(Operator.MINUS, x_param.get_reference(), new Atom(2))
+                                ]})
+                            )
+                        )}
                     )
-                )}
+                }
             )
         )
         const machine = new IcExecutionMachine()
         machine.execute(fib.to_statement())
-        expect(machine.evaluate(new FunctionCall('fib', {args: [new Atom(10)]}))).toEqual(55)
+        expect(machine.evaluate(new FunctionCall('fib', {args: [new Atom(19)]}))).toEqual(4181)
     })
 
-    test('fibonacci-iter', () => {
+    test('sum-first-n-iter', () => {
         const x_param = new VariableDeclaration(VariableType.I32, 'x')
         const y_param = new VariableDeclaration(VariableType.I32, 'y', {
             initial_value: new Atom(1)
         })
 
-        const fib = new Function('fib', [x_param], VariableType.I32, new Statements([
+        const sum = new Function('sum', [x_param], VariableType.I32, new Statements([
             y_param.to_statement(),
             new While(
                 new BinaryOperation(
@@ -645,8 +653,8 @@ describe('functions', () => {
         ]))
 
         const machine = new IcExecutionMachine()
-        machine.execute(fib.to_statement())
-        expect(machine.evaluate(new FunctionCall('fib', {args: [new Atom(10)]}))).toEqual(55)
+        machine.execute(sum.to_statement())
+        expect(machine.evaluate(new FunctionCall('sum', {args: [new Atom(100)]}))).toEqual(5050)
     })
 
     test('factorial-req', () => {
