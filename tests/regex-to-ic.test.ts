@@ -84,6 +84,61 @@ const tests: Array<{regex: string, executions: Array<{input: string, expected: R
         {input: 'for', expected: {read: 4, out: 'for'}},
         {input: 'f', expected: {read: 2, out: undefined}},
     ]
+}, {
+    regex: '(a(bc?)?)?',
+    executions: [
+        {input: '', expected: {read: 1, out: ''}},
+        {input: 'x', expected: {read: 1, out: ''}},
+        {input: 'a', expected: {read: 2, out: 'a'}},
+        {input: 'ab', expected: {read: 3, out: 'ab'}},
+        {input: 'abc', expected: {read: 3, out: 'abc'}},
+        {input: 'ac', expected: {read: 2, out: 'a'}},
+        {input: 'abbc', expected: {read: 3, out: 'ab'}},
+    ]
+}, {
+    regex: 'a[^xyz]b*[d-gn-z]+',
+    executions: [
+        {input: '', expected: {read: 1, out: undefined}},
+        {input: 'a', expected: {read: 2, out: undefined}},
+        {input: 'ax', expected: {read: 2, out: undefined}},
+        {input: 'aK', expected: {read: 3, out: undefined}},
+        {input: 'aKbb', expected: {read: 5, out: undefined}},
+        {input: 'aKbbz', expected: {read: 6, out: 'aKbbz'}},
+        {input: 'aToz', expected: {read: 5, out: 'aToz'}},
+    ]
+}, {
+    regex: 'a?[bc]*[def]+',
+    executions: [
+        {input: '', expected: {read: 1, out: undefined}},
+        {input: 'a', expected: {read: 2, out: undefined}},
+        {input: 'ab', expected: {read: 3, out: undefined}},
+        {input: 'f', expected: {read: 2, out: 'f'}},
+        {input: 'abcdef', expected: {read: 7, out: 'abcdef'}},
+        {input: 'bcbcbcdef', expected: {read: 10, out: 'bcbcbcdef'}},
+    ]
+}, {
+    regex: 'if|for|while',
+    executions: [
+        {input: 'if', expected: {read: 2, out: 'if'}},
+        {input: 'for', expected: {read: 3, out: 'for'}},
+        {input: 'while', expected: {read: 5, out: 'while'}},
+    ]
+}, {
+    regex: '(xx|[ab][cd])+',
+    executions: [
+        {input: 'xc', expected: {read: 2, out: undefined}},
+        {input: 'dc', expected: {read: 1, out: undefined}},
+        {input: 'xx', expected: {read: 3, out: 'xx'}},
+        {input: 'acbd', expected: {read: 5, out: 'acbd'}},
+        {input: 'xxacxxad', expected: {read: 9, out: 'xxacxxad'}},
+    ]
+}, {
+    regex: '(\\s|\\/\\/[^\\n]*\\n)+',
+    executions: [
+        {input: 'x', expected: {read: 1, out: undefined}},
+        {input: ' \t', expected: {read: 3, out: ' \t'}},
+        {input: '// comment\n // another\n', expected: {read: 24, out: '// comment\n // another\n'}},
+    ]
 }]
 
 for (const {regex, executions} of tests) {
