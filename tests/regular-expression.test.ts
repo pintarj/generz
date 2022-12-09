@@ -299,6 +299,14 @@ describe('meta-characters', () => {
         const regex = f('\\r')
         expect(regex.match('\r')).toEqual('\r')
     })
+
+    test('.', () => {
+        const regex = f('.')
+        expect(regex.match('a')).toEqual('a')
+        expect(regex.match('.')).toEqual('.')
+        expect(regex.match('😃')).toEqual('😃')
+        expect(regex.match('教')).toEqual('教')
+    })
 })
 
 describe('merge', () => {

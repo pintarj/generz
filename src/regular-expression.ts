@@ -73,6 +73,11 @@ export class RegularExpression {
     }
 
     private parse_symbol(): AbstractSymbol|undefined {
+        if (this.current_code_point === 0x2E) { // .
+            this.consume_current_code_point()
+            return new MultiSymbol([new IntegerInterval(0, Number.MAX_SAFE_INTEGER)])
+        }
+
         if (this.current_code_point === 0x5C) { // \
             this.consume_current_code_point()
             const character = this.consume_current_code_point()
