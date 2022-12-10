@@ -97,8 +97,27 @@ class Vars {
         return [this.input_var, this.state_var].filter((x): x is VariableDeclaration => x !== undefined)
     }
 }
+class Analysis {
+    private refs: Map<number, number>
+
+    public constructor(machine: State) {
+        this.refs = new Map()
+
+        for (const state of machine.get_transitively_reachable_states()) {
+            for (const transition of state.transitions) {
+                const value = this.get_refs(transition.state) + 1
+                this.refs.set(transition.state.id, value)
+            }
+        }
+    }
+
+    public get_refs(state: State): number {
+        return this.refs.get(state.id) || 0
+    }
+}
 
 export function regex_to_ic(machine: State): Statement {
+    const analysis = new Analysis(machine)
     const vars = new Vars()
     const processed = new Set<number>()
     const defer_queue: State[] = []
@@ -110,7 +129,9 @@ export function regex_to_ic(machine: State): Statement {
         }
     }
 
-    function handle_state(state: State, fail_body: Statement|undefined): Statement {
+    function handle_state(state: State, fail_body: Statement|undefined, options?: {seen?: Set<number>}): Statement {
+        const seen = options?.seen || new Set()
+        seen.add(state.id)
         processed.add(state.id)
         const statements: Statement[] = []
 
@@ -118,30 +139,39 @@ export function regex_to_ic(machine: State): Statement {
             statements.push((new FunctionCall('mark')).to_statement())
         }
 
-        let body = fail_body
+        let state_body: Statement|undefined
 
-        if (state.transitions.length !== 0) {
+        if (state.transitions.length === 0) {
+            state_body = fail_body
+        } else {
             statements.push(new Assignment(vars.input_ref, new FunctionCall('next')))
             
             const branches: Array<{condition: Expression, body: Statement}> = []
 
             for (const transition of state.transitions) {
                 const condition = build_transition_condition(transition, vars.input_ref)
+                const next = transition.state
 
-                defer_state_handling(transition.state)
-    
-                const body: Statement = (state.id !== transition.state.id)
-                    ? new Assignment(vars.state_ref, new Atom(transition.state.id))
-                    : new Statements([], {comment: `remains in state ${transition.state.id}`})
+                let body: Statement
+
+                if (!seen.has(next.id) && analysis.get_refs(next) < 2) {
+                    body = handle_state(next, fail_body, {seen})
+                } else {
+                    body = (state.id !== transition.state.id)
+                        ? new Assignment(vars.state_ref, new Atom(next.id))
+                        : new Statements([], {comment: `remains in state ${next.id}`})
+
+                    defer_state_handling(next)
+                }
                 
                 branches.push({condition, body})
             }
 
-            body = reduce_branches(branches, body)
+            state_body = reduce_branches(branches, fail_body)
         }
 
-        if (body !== undefined)
-            statements.push(body)
+        if (state_body !== undefined)
+            statements.push(state_body)
         
         return new Statements(statements)
     }
