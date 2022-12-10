@@ -2,13 +2,16 @@ import { Assignment } from './ic/assignment'
 import { Atom } from './ic/atom'
 import { BinaryOperation, Operator } from './ic/binary-operation'
 import { Break } from './ic/break'
+import { Expression } from './ic/expression'
 import { FunctionCall } from './ic/function-call'
 import { If } from './ic/if'
 import { Statement } from './ic/statement'
 import { Statements } from './ic/statements'
 import { VariableDeclaration, VariableType } from './ic/variable-declaration'
+import { VariableReference } from './ic/variable-reference'
 import { While } from './ic/while'
 import { State } from './regex/state'
+import { Transition } from './regex/transition'
 
 function enhance_printable_comment(atom: Atom): Atom {
     if (Number.isSafeInteger(atom.value))
@@ -17,101 +20,178 @@ function enhance_printable_comment(atom: Atom): Atom {
     return atom
 }
 
-export function regex_to_ic(
-    machine: State,
-    options?: Readonly<{
-        on_final_inject?: (machine_id: number) => Statement
-    }>
-): Statement {
-    const {on_final_inject} = options || {}
-
-    const state_var = new VariableDeclaration(VariableType.I32, 'state', {
-        mutable: true,
-        initial_value: new Atom(machine.id),
-        comment: 'Contains the id of the current state of the machine.'
-    })
-
-    const input_var = new VariableDeclaration(VariableType.I32, 'input', {
-        mutable: true,
-        initial_value: new Atom(-1),
-        comment: 'Will contain the current input of the machine.'
-    })
-
-    const state_ref = state_var.get_reference()
-    const input_ref = input_var.get_reference()
-
-    let states_switch: Statement = (new FunctionCall('throw_error', {
-        args: [new Atom('program reached invalid state: regex machine state unknown')]
-    })).to_statement()
-
-    for (const state of machine.get_transitively_reachable_states().reverse()) {
-        const state_condition = new BinaryOperation(
-            Operator.EQUAL,
-            state_ref,
-            new Atom(state.id)
-        )
-
-        let state_body: Statement = new Break()
-
-        if (state.transitions.length !== 0) {
-            for (const transition of state.transitions) {
-                const intervals = transition.symbol!.set.get_intervals()
+function build_transition_condition(transition: Transition, input_expression: Expression): Expression {
+    const intervals = transition.symbol!.set.get_intervals()
                 
-                const intervals_conditions = intervals.map(interval =>
-                    (interval.length === 1)
-                        ? new BinaryOperation(Operator.EQUAL, input_ref, enhance_printable_comment(new Atom(interval.start)))
-                        : new BinaryOperation(
-                            Operator.AND,
-                            new BinaryOperation(Operator.GREATER_THAN_OR_EQUAL, input_ref, enhance_printable_comment(new Atom(interval.start))),
-                            new BinaryOperation(Operator.LESS_THAN_OR_EQUAL, input_ref, enhance_printable_comment(new Atom(interval.end - 1)))
-                        )
-                )
-                
-                const input_condition = intervals_conditions.reduce((left, right) => 
-                    new BinaryOperation(Operator.OR, left, right)
-                )
+    const intervals_conditions = intervals.map(interval =>
+        (interval.length === 1)
+            ? new BinaryOperation(Operator.EQUAL, input_expression, enhance_printable_comment(new Atom(interval.start)))
+            : new BinaryOperation(
+                Operator.AND,
+                new BinaryOperation(Operator.GREATER_THAN_OR_EQUAL, input_expression, enhance_printable_comment(new Atom(interval.start))),
+                new BinaryOperation(Operator.LESS_THAN_OR_EQUAL, input_expression, enhance_printable_comment(new Atom(interval.end - 1)))
+            )
+    )
     
-                /**
-                 * Action to perform for a specific state/input.
-                 * When state would not change no assignment is added.
-                 */
-                const action: Statement = (state.id !== transition.state.id)
-                    ? new Assignment(state_ref, new Atom(transition.state.id))
-                    : new Statements([], {comment: `remains in state ${transition.state.id}`})
-                
-                state_body = new If(input_condition, action, {
-                    else_body: state_body
-                })
-            }
+    return intervals_conditions.reduce((left, right) => 
+        new BinaryOperation(Operator.OR, left, right)
+    )
+}
 
-            state_body = new Statements([
-                new Assignment(input_ref, new FunctionCall('next')),
-                state_body
-            ])
+interface Branch {
+    condition: Expression
+    body: Statement
+}
+
+function reduce_branches(branches: Array<Branch>, else_body: Statement|undefined): Statement {
+    const reducer = (else_body: Statement|undefined, branch: Branch): Statement => {
+        return new If(branch.condition, branch.body, {else_body})
+    }
+
+    return branches.reduceRight(reducer, else_body) || new Statements([])
+}
+
+class Vars {
+    private input_var: VariableDeclaration|undefined
+    private state_var: VariableDeclaration|undefined
+    
+    public constructor() {
+        this.input_var = undefined
+        this.state_var = undefined
+    }
+
+    public declare_state_var(initial_value: number): VariableDeclaration {
+        if (this.state_var !== undefined)
+            throw new Error('Variable `state` already declared.')
+
+        this.state_var = new VariableDeclaration(VariableType.I32, 'state', {
+            mutable: true,
+            initial_value: new Atom(initial_value),
+            comment: 'Will contain the id of the current state of the machine.'
+        })
+
+        return this.state_var
+    }
+
+    public get input_ref(): VariableReference {
+        if (this.input_var === undefined) {
+            this.input_var = new VariableDeclaration(VariableType.I32, 'input', {
+                mutable: true,
+                initial_value: new Atom(-1),
+                comment: 'Will contain the current input of the machine.'
+            })
         }
+
+        return this.input_var.get_reference()
+    }
+
+    public get state_ref(): VariableReference {
+        if (this.state_var === undefined) {
+            this.state_var = this.declare_state_var(-1)
+        }
+
+        return this.state_var.get_reference()
+    }
+
+    public get_declarations(): VariableDeclaration[] {
+        return [this.input_var, this.state_var].filter((x): x is VariableDeclaration => x !== undefined)
+    }
+}
+
+export function regex_to_ic(machine: State): Statement {
+    const vars = new Vars()
+    const processed = new Set<number>()
+    const defer_queue: State[] = []
+
+    function defer_state_handling(state: State): void {
+        if (!processed.has(state.id)) {
+            processed.add(state.id)
+            defer_queue.push(state)
+        }
+    }
+
+    function handle_state(state: State, fail_body: Statement|undefined): Statement {
+        processed.add(state.id)
+        const statements: Statement[] = []
 
         if (state.is_final) {
-            const statements = [
-                (new FunctionCall('mark')).to_statement()
-            ]
-
-            state_condition.comment = 'final'
-
-            if (on_final_inject !== undefined)
-                statements.push(on_final_inject(state.machine_id!))
-
-            statements.push(state_body)
-            state_body = new Statements(statements)
+            statements.push((new FunctionCall('mark')).to_statement())
         }
 
-        states_switch = new If(state_condition, state_body, {
-            else_body: states_switch
-        })
+        let body = fail_body
+
+        if (state.transitions.length !== 0) {
+            statements.push(new Assignment(vars.input_ref, new FunctionCall('next')))
+            
+            const branches: Array<{condition: Expression, body: Statement}> = []
+
+            for (const transition of state.transitions) {
+                const condition = build_transition_condition(transition, vars.input_ref)
+
+                defer_state_handling(transition.state)
+    
+                const body: Statement = (state.id !== transition.state.id)
+                    ? new Assignment(vars.state_ref, new Atom(transition.state.id))
+                    : new Statements([], {comment: `remains in state ${transition.state.id}`})
+                
+                branches.push({condition, body})
+            }
+
+            body = reduce_branches(branches, body)
+        }
+
+        if (body !== undefined)
+            statements.push(body)
+        
+        return new Statements(statements)
+    }
+
+    const statements: Statement[] = [
+        handle_state(machine, undefined)
+    ]
+
+    if (defer_queue.length !== 0) {
+        const branches: Array<Branch> = []
+
+        while (true) {
+            const state = defer_queue.shift()
+    
+            if (state === undefined)
+                break
+    
+            const condition = new BinaryOperation(
+                Operator.EQUAL,
+                vars.state_ref,
+                new Atom(state.id)
+            )
+
+            const body = handle_state(state, new Break())
+            
+            branches.push({
+                condition,
+                body
+            })
+        }
+    
+        const fail_body: Statement = (new FunctionCall('throw_error', {
+            args: [new Atom('program reached invalid state: regex machine state unknown')]
+        })).to_statement()
+
+        const while_body = reduce_branches(branches, fail_body)
+    
+        statements.push(
+            new If(
+                new BinaryOperation(Operator.NOT_EQUAL, vars.state_ref, new Atom(-1)),
+                new While(
+                    new Atom(true),
+                    while_body
+                )
+            )
+        )
     }
 
     return new Statements([
-        input_var.to_statement(),
-        state_var.to_statement(),
-        new While(new Atom(true), states_switch)
+        ...vars.get_declarations().map(x => x.to_statement()),
+        ...statements
     ])
 }
