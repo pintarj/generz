@@ -144,12 +144,19 @@ export function regex_to_ic(machine: State): Statement {
         if (state.transitions.length === 0) {
             state_body = fail_body
         } else {
-            statements.push(new Assignment(vars.input_ref, new FunctionCall('next')))
-            
+            let input_expr: Expression
+
+            if (state.transitions.length === 1 && state.transitions[0].symbol!.set.size === 1) {
+                input_expr = new FunctionCall('next')
+            } else {
+                statements.push(new Assignment(vars.input_ref, new FunctionCall('next')))
+                input_expr = vars.input_ref
+            }
+
             const branches: Array<{condition: Expression, body: Statement}> = []
 
             for (const transition of state.transitions) {
-                const condition = build_transition_condition(transition, vars.input_ref)
+                const condition = build_transition_condition(transition, input_expr)
                 const next = transition.state
 
                 let body: Statement
