@@ -28,8 +28,8 @@ class RegexMachine {
             return buffer.charCodeAt(cursor_index)
         })
     
-        machine.global_scope.declare_function('mark', () => {
-            marker_length = cursor_index + 1
+        machine.global_scope.declare_function('mark', (relative_index?: number) => {
+            marker_length = cursor_index + 1 + (relative_index || 0)
         })
 
         machine.execute(this.regex_ic)

@@ -2,6 +2,7 @@ import { Assignment } from './ic/assignment'
 import { Atom } from './ic/atom'
 import { BinaryOperation, Operator } from './ic/binary-operation'
 import { Break } from './ic/break'
+import { DoWhile } from './ic/do-while'
 import { Expression } from './ic/expression'
 import { FunctionCall } from './ic/function-call'
 import { If } from './ic/if'
@@ -143,10 +144,8 @@ export function regex_to_ic(machine: State): Statement {
         processed.add(state.id)
         const statements: Statement[] = []
 
-        if (state.is_final) {
-            statements.push((new FunctionCall('mark')).to_statement())
-        }
-
+        let handle_final = true
+        let init_input = false
         let state_body: Statement|undefined
 
         if (state.transitions.length === 0) {
@@ -157,13 +156,54 @@ export function regex_to_ic(machine: State): Statement {
             if (state.transitions.length === 1 && state.transitions[0].symbol!.set.size === 1) {
                 input_expr = new FunctionCall('next')
             } else {
-                statements.push(new Assignment(vars.input_ref, new FunctionCall('next')))
+                init_input = true
                 input_expr = vars.input_ref
+            }
+
+            const transitions = {
+                looping: [] as Transition[],
+                jumping: [] as Transition[]
+            }
+
+            for (const transition of state.transitions) {
+                if (state.id === transition.state.id) {
+                    transitions.looping.push(transition)
+                } else {
+                    transitions.jumping.push(transition)
+                }
+            }
+
+            if (transitions.looping.length > 1)
+                throw new Error('bug: no state should have more than one looping-transition')
+
+            for (const transition of transitions.looping) {
+                const condition = build_transition_condition(transition, input_expr)
+                let loop: Statement
+
+                if (init_input) {
+                    init_input = false
+                    loop = new DoWhile(
+                        condition,
+                        new Assignment(vars.input_ref, new FunctionCall('next'))
+                    )
+                } else {
+                    loop = new While(
+                        condition,
+                        new Statements([], {comment: 'nop'})
+                    ) 
+                }
+
+                statements.push(loop)
+
+                if (state.is_final) {
+                    statements.push((new FunctionCall('mark', {args: [new Atom(-1)]})).to_statement())
+                    handle_final = false
+                }
             }
 
             const branches: Array<{condition: Expression, body: Statement}> = []
 
-            for (const transition of state.transitions) {
+            for (const transition of transitions.jumping) {
                 let condition = build_transition_condition(transition, input_expr)
                 let next = transition.state
                 let body: Statement
@@ -203,6 +243,13 @@ export function regex_to_ic(machine: State): Statement {
 
             state_body = reduce_branches(branches, fail_body)
         }
+
+        if (handle_final && state.is_final) {
+            statements.push((new FunctionCall('mark')).to_statement())
+        }
+
+        if (init_input)
+            statements.push(new Assignment(vars.input_ref, new FunctionCall('next')))
 
         if (state_body !== undefined)
             statements.push(state_body)
