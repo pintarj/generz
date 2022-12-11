@@ -156,19 +156,38 @@ export function regex_to_ic(machine: State): Statement {
             const branches: Array<{condition: Expression, body: Statement}> = []
 
             for (const transition of state.transitions) {
-                const condition = build_transition_condition(transition, input_expr)
-                const next = transition.state
-
+                let condition = build_transition_condition(transition, input_expr)
+                let next = transition.state
                 let body: Statement
 
-                if (!seen.has(next.id) && analysis.get_refs(next) < 2) {
-                    body = handle_state(next, fail_body, {seen})
-                } else {
-                    body = (state.id !== transition.state.id)
-                        ? new Assignment(vars.state_ref, new Atom(next.id))
-                        : new Statements([], {comment: `remains in state ${next.id}`})
+                while (true) {
+                    if (seen.has(next.id) || analysis.get_refs(next) >= 2) {
+                        if (next.id === state.id) {  
+                            body = new Statements([], {comment: `remains in state ${next.id}`})
+                        } else {
+                            body = new Assignment(vars.state_ref, new Atom(next.id))
+                            defer_state_handling(next)
+                        }
+                        break
+                    }
 
-                    defer_state_handling(next)
+                    if (!next.is_final && next.transitions.length === 1) {
+                        const next_transition = next.transitions[0]
+
+                        if (next_transition.symbol!.set.size === 1) {
+                            condition = new BinaryOperation(
+                                Operator.AND,
+                                condition,
+                                build_transition_condition(next_transition, new FunctionCall('next'))
+                            )
+
+                            next = next_transition.state
+                            continue
+                        }
+                    }
+
+                    body = handle_state(next, fail_body, {seen})
+                    break
                 }
                 
                 branches.push({condition, body})
