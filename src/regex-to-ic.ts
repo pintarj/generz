@@ -129,8 +129,16 @@ export function regex_to_ic(machine: State): Statement {
         }
     }
 
-    function handle_state(state: State, fail_body: Statement|undefined, options?: {seen?: Set<number>}): Statement {
+    function handle_state(
+        state: State,
+        fail_body: Statement|undefined,
+        options?: {
+            seen?: Set<number>
+            root_state?: State
+        }
+    ): Statement {
         const seen = options?.seen || new Set()
+        const root_state = options?.root_state || state
         seen.add(state.id)
         processed.add(state.id)
         const statements: Statement[] = []
@@ -162,7 +170,7 @@ export function regex_to_ic(machine: State): Statement {
 
                 while (true) {
                     if (seen.has(next.id) || analysis.get_refs(next) >= 2) {
-                        if (next.id === state.id) {  
+                        if (next.id === root_state.id) {  
                             body = new Statements([], {comment: `remains in state ${next.id}`})
                         } else {
                             body = new Assignment(vars.state_ref, new Atom(next.id))
@@ -186,7 +194,7 @@ export function regex_to_ic(machine: State): Statement {
                         }
                     }
 
-                    body = handle_state(next, fail_body, {seen})
+                    body = handle_state(next, fail_body, {seen, root_state})
                     break
                 }
                 
