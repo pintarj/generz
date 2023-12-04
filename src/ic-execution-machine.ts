@@ -168,10 +168,12 @@ export class IcExecutionMachine {
 
                     const result = this.execute(d.body, {scope: function_scope})
 
-                    if (result?.type !== 'return')
-                        throw new Error(`executed function didn't returned any value`)
+                    if (d.return_type !== VariableType.VOID) {
+                        if (result?.type !== 'return')
+                            throw new Error(`executed function \`${d.name}\` didn't returned any value`)
 
-                    return result.value
+                        return result.value
+                    }
                 })
             } else if (d instanceof VariableDeclaration) {
                 const initial_value = d.initial_value !== undefined
