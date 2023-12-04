@@ -36,13 +36,9 @@ The behavior of the generated phases is described with the [**Generz Language**]
 
 **TLDR**: `.erz` source files can be validated, but nothing is produced yet.
 
-The architecture of `generz` also include phases, some of them *(lexical, syntax, derivation-tree and semantic analysis)* are already implemented. Those allow the `.erz` source files to be validated but no code is actually generated.
+The architecture of `generz` also include phases, some of them *(lexical, syntax, derivation-tree, semantic analysis, intermediate code generation)* are already implemented. Those allow the `.erz` source files to be validated but no code is actually generated.
 
 The following steps would be:
-
-### `v0.7` - Intermediate code generation
-
-This phase would generate IC (or [Intermediate representation](https://en.wikipedia.org/wiki/Intermediate_representation)). Still nothing is produced.
 
 ### `v0.8` - Output code generation (TypeScript)
 
