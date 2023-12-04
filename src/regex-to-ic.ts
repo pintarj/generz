@@ -117,7 +117,13 @@ class Analysis {
     }
 }
 
-export function regex_to_ic(machine: State): Statement {
+export function regex_to_ic(
+    machine: State,
+    options?: {
+        parsed_terminal_id_ref?: VariableReference
+    }
+): Statement {
+    const parsed_terminal_id_ref = options?.parsed_terminal_id_ref
     const analysis = new Analysis(machine)
     const vars = new Vars()
     const processed = new Set<number>()
@@ -197,6 +203,10 @@ export function regex_to_ic(machine: State): Statement {
 
                 if (state.is_final) {
                     statements.push((new FunctionCall('mark', {args: [new Atom(-1)]})).to_statement())
+
+                    if (parsed_terminal_id_ref !== undefined)
+                        statements.push(new Assignment(parsed_terminal_id_ref, new Atom(state.machine_id)))
+
                     handle_final = false
                 }
             }
@@ -246,6 +256,9 @@ export function regex_to_ic(machine: State): Statement {
 
         if (handle_final && state.is_final) {
             statements.push((new FunctionCall('mark')).to_statement())
+
+            if (parsed_terminal_id_ref !== undefined)
+                statements.push(new Assignment(parsed_terminal_id_ref, new Atom(state.machine_id)))
         }
 
         if (init_input)

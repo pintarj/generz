@@ -1,5 +1,7 @@
 import { IcExecutionMachine } from '@dist/ic-execution-machine'
+import { Atom } from '@dist/ic/atom'
 import { Statement } from '@dist/ic/statement'
+import { VariableDeclaration, VariableType } from '@dist/ic/variable-declaration'
 import { StringReader } from '@dist/reader'
 import { regex_to_ic } from '@dist/regex-to-ic'
 import { RegularExpression } from '@dist/regular-expression'
@@ -7,13 +9,23 @@ import { RegularExpression } from '@dist/regular-expression'
 interface RegexMachineExecutionResult {
     out: string|undefined
     read: number
+    terminal_id?: number|undefined
 }
 
 class RegexMachine {
+    private readonly var_terminal_id: VariableDeclaration|undefined
     private readonly regex_ic: Statement
 
-    public constructor(regex: string) {
-        this.regex_ic = regex_to_ic((new RegularExpression(new StringReader(regex))).generate())
+    public constructor(regex: string, options?: {machine_id?: number}) {
+        const {machine_id} = options || {}
+        const state = (new RegularExpression(new StringReader(regex))).generate()
+        state.get_transitively_reachable_final_states().forEach(state => state.machine_id = machine_id)
+
+        this.var_terminal_id = machine_id !== undefined
+            ? new VariableDeclaration(VariableType.I32, 'terminal_id', {initial_value: new Atom(-1)})
+            : undefined
+
+        this.regex_ic = regex_to_ic(state, {parsed_terminal_id_ref: this.var_terminal_id?.get_reference()})
     }
 
     public execute(input: string): RegexMachineExecutionResult {
@@ -22,6 +34,14 @@ class RegexMachine {
         let marker_length = -1
 
         const machine = new IcExecutionMachine()
+
+        if (this.var_terminal_id !== undefined) {
+            const initial_value = this.var_terminal_id.initial_value !== undefined
+                ? machine.evaluate(this.var_terminal_id.initial_value)
+                : undefined
+            
+            machine.global_scope.declare_variable(this.var_terminal_id.name, this.var_terminal_id.type, initial_value)
+        }
         
         machine.global_scope.declare_function('next', () => {
             cursor_index += 1
@@ -38,16 +58,20 @@ class RegexMachine {
             read: cursor_index + 1,
             out: (marker_length === -1)
                 ? undefined
-                : buffer.substring(0, marker_length)
+                : buffer.substring(0, marker_length),
+            terminal_id: this.var_terminal_id !== undefined
+                ? machine.global_scope.get_variable('terminal_id').value
+                : undefined
         }
     }
 }
 
-const tests: Array<{regex: string, executions: Array<{input: string, expected: RegexMachineExecutionResult}>}> = [{
+const tests: Array<{regex: string, machine_id?: number, executions: Array<{input: string, expected: RegexMachineExecutionResult}>}> = [{
     regex: 'a',
+    machine_id: 3,
     executions: [
-        {input: 'b', expected: {read: 1, out: undefined}},
-        {input: 'a', expected: {read: 1, out: 'a'}},
+        {input: 'b', expected: {read: 1, out: undefined, terminal_id: -1}},
+        {input: 'a', expected: {read: 1, out: 'a', terminal_id: 3}},
     ]
 }, {
     regex: 'aa',
@@ -71,10 +95,11 @@ const tests: Array<{regex: string, executions: Array<{input: string, expected: R
     ]
 }, {
     regex: '(\\w\\w\\w\\.)+',
+    machine_id: 78,
     executions: [
-        {input: 'abc.def.', expected: {read: 9, out: 'abc.def.'}},
-        {input: 'abc.def', expected: {read: 8, out: 'abc.'}},
-        {input: 'ab.def.', expected: {read: 3, out: undefined}},
+        {input: 'abc.def.', expected: {read: 9, out: 'abc.def.', terminal_id: 78}},
+        {input: 'abc.def', expected: {read: 8, out: 'abc.', terminal_id: 78}},
+        {input: 'ab.def.', expected: {read: 3, out: undefined, terminal_id: -1}},
     ]
 }, {
     regex: 'for(all)?',
@@ -141,9 +166,9 @@ const tests: Array<{regex: string, executions: Array<{input: string, expected: R
     ]
 }]
 
-for (const {regex, executions} of tests) {
+for (const {regex, machine_id, executions} of tests) {
     describe(regex, () => {
-        const machine = new RegexMachine(regex)
+        const machine = new RegexMachine(regex, {machine_id})
 
         for (const {input, expected} of executions) {
             test(input, () => {
