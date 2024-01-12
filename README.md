@@ -34,17 +34,11 @@ The behavior of the generated phases is described with the [**Generz Language**]
 ---
 ## Project status
 
-**TLDR**: `.erz` source files can be validated, but nothing is produced yet.
-
-The architecture of `generz` also include phases, some of them *(lexical, syntax, derivation-tree, semantic analysis, intermediate code generation)* are already implemented. Those allow the `.erz` source files to be validated but no code is actually generated.
-
-The following steps would be:
-
-### `v0.8` - Output code generation (TypeScript)
-
-This phase would produce the actual code that (at this point) would be only capable of validating a source code, without building the AST.
+**TLDR**: The `generz` compiler is capable of generating code (in TypeScript) that validates sources in a custom syntax. AST is not _yet_ built from the generated code.
 
 > Generated code for TypeScript, why? Because `generz` itself is written in TypeScript and one of the first things it should do is generating code for itself. Obviously the next targets are C++ and Rust. 
+
+The following steps would be:
 
 ### `v0.9` - Language capable of building AST
 
