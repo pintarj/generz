@@ -4,10 +4,10 @@ const config: Config.InitialOptions = {
     preset: 'ts-jest',
     testEnvironment: 'node',
     testRegex: 'tests[/\\\\].+\\.test\\.ts$',
-    globals: {
-        'ts-jest': {
+    transform: {
+        '\\.ts$': ['ts-jest', {
             tsconfig: 'tests/tsconfig.json'
-        }
+        }]
     },
     moduleNameMapper: {
         '^@dist/(.*)$': '<rootDir>/dist/$1'
