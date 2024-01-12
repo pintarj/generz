@@ -20,7 +20,8 @@
     "pretest": "npm run build",
     "postversion": "git push && git push --tags",
     "start": "node --enable-source-maps dist/main.js",
-    "test": "jest"
+    "test": "jest",
+    "ts-node": "ts-node"
   },
   "repository": {
     "type": "git",
