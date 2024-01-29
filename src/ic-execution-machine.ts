@@ -178,7 +178,7 @@ export class IcExecutionMachine {
             } else if (d instanceof VariableDeclaration) {
                 const initial_value = d.initial_value !== undefined
                     ? this.evaluate(d.initial_value, {scope})
-                    : new Atom(0)
+                    : 0
 
                 scope.declare_variable(d.name, d.type, initial_value)
             } else {

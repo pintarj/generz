@@ -4,6 +4,8 @@ import { Atom } from '@dist/ic/atom'
 import { BinaryOperation, Operator } from '@dist/ic/binary-operation'
 import { Break } from '@dist/ic/break'
 import { Continue } from '@dist/ic/continue'
+import { Declaration } from '@dist/ic/declaration'
+import { DeclarationStatement } from '@dist/ic/declaration-statement'
 import { DoWhile } from '@dist/ic/do-while'
 import { Expression } from '@dist/ic/expression'
 import { ExpressionStatement } from '@dist/ic/expression-statement'
@@ -11,6 +13,7 @@ import { Function } from '@dist/ic/function'
 import { FunctionCall } from '@dist/ic/function-call'
 import { If } from '@dist/ic/if'
 import { Return } from '@dist/ic/return'
+import { Statement } from '@dist/ic/statement'
 import { Statements } from '@dist/ic/statements'
 import { VariableDeclaration, VariableType } from '@dist/ic/variable-declaration'
 import { While } from '@dist/ic/while'
@@ -26,6 +29,41 @@ describe('evaluate', () => {
     })
 
     describe('binary-operator', () => {
+        test('plus', () => {
+            const f = (l: any, r: any) => evaluate(new BinaryOperation(Operator.PLUS, new Atom(l), new Atom(r)))
+            expect(f(1, 2)).toBe(3)
+            expect(f(-9, 9)).toBe(0)
+            expect(f(2, 1)).toBe(3)
+        })
+
+        test('minus', () => {
+            const f = (l: any, r: any) => evaluate(new BinaryOperation(Operator.MINUS, new Atom(l), new Atom(r)))
+            expect(f(1, 2)).toBe(-1)
+            expect(f(-9, 9)).toBe(-18)
+            expect(f(2, 1)).toBe(1)
+        })
+
+        test('multiply', () => {
+            const f = (l: any, r: any) => evaluate(new BinaryOperation(Operator.MULTIPLY, new Atom(l), new Atom(r)))
+            expect(f(1, 2)).toBe(2)
+            expect(f(-9, 9)).toBe(-81)
+            expect(f(2, 1)).toBe(2)
+            expect(f(222, 0)).toBe(0)
+        })
+
+        test('divide', () => {
+            const f = (l: any, r: any) => evaluate(new BinaryOperation(Operator.DIVIDE, new Atom(l), new Atom(r)))
+            expect(f(6, 2)).toBe(3)
+            expect(f(8, 3)).toBe(2)
+            expect(f(0, 10)).toBe(0)
+            expect(f(-1, 4)).toBe(-1)
+            expect(f(-2, 4)).toBe(-1)
+            expect(f(-4, 4)).toBe(-1)
+            expect(f(-10, 4)).toBe(-3)
+            expect(f(1, 0)).toBe(Infinity)
+            expect(f(-1, 0)).toBe(-Infinity)
+        })
+
         test('or', () => {
             const f = (l: any, r: any) => evaluate(new BinaryOperation(Operator.OR, new Atom(l), new Atom(r)))
             expect(f(false, false)).toBe(false)
@@ -149,6 +187,10 @@ describe('evaluate', () => {
             expect(f(2, 1)).toBe(true)
             expect(f(2, 2)).toBe(true)
         })
+
+        test('unknown', () => {
+            expect(() => evaluate(new BinaryOperation('Arcades' as unknown as Operator, new Atom(0), new Atom(0)))).toThrow(/unknown operator/)
+        })
     })
 
     test('function-call', () => {
@@ -168,6 +210,10 @@ describe('evaluate', () => {
         })
         machine.execute(variable.to_statement())
         expect(machine.evaluate(variable.get_reference())).toBe(78)
+    })
+
+    test('unknown', () => {
+        expect(() => evaluate(null as unknown as Expression)).toThrow(/lack of implementation/)
     })
 })
 
@@ -242,6 +288,13 @@ describe('execute', () => {
         expect(machine.global_scope.get_function('f')).toBeTruthy()
     })
 
+    test('function-no-return', () => {
+        const machine = new IcExecutionMachine()
+        const f = new Function('f', [], VariableType.I32, new Statements([]))
+        machine.execute(f.to_statement())
+        expect(() => machine.global_scope.get_function('f')()).toThrow(/executed function `f` didn't returned any value/)
+    })
+
     test('expression-statement', () => {
         const machine = new IcExecutionMachine()
         expect(machine.execute(new ExpressionStatement(new Atom('yolo')))).toEqual(undefined)
@@ -282,53 +335,202 @@ describe('execute', () => {
         expect(machine.global_scope.get_variable('a').value).toBe(-99)
     })
 
-    test('while', () => {
+    test('variable-declaration-default-value', () => {
         const machine = new IcExecutionMachine()
-        const i_var = new VariableDeclaration(VariableType.I32, 'i', {
-            initial_value: new Atom(0)
-        })
-        const x_var = new VariableDeclaration(VariableType.I32, 'x', {
-            initial_value: new Atom(0)
-        })
-        machine.execute(i_var.to_statement())
-        machine.execute(x_var.to_statement())
-
-        machine.execute(new While(
-            new BinaryOperation(Operator.LESS_THAN, i_var.get_reference(), new Atom(10)),
-            new Statements([
-                new Assignment(
-                    x_var.get_reference(),
-                    new BinaryOperation(Operator.PLUS, x_var.get_reference(), new Atom(2))
-                ),
-                new Assignment(
-                    i_var.get_reference(),
-                    new BinaryOperation(Operator.PLUS, i_var.get_reference(), new Atom(1))
-                )
-            ])
-        ))
-
-        expect(machine.evaluate(i_var.get_reference())).toBe(10)
-        expect(machine.evaluate(x_var.get_reference())).toBe(20)
+        const variable = new VariableDeclaration(VariableType.I32, 'a')
+        machine.execute(variable.to_statement())
+        expect(machine.evaluate(variable.get_reference())).toBe(0)
     })
 
-    test('do-while', () => {
+    test('declaration-statement-unknown', () => {
+        class UnknownDeclarationStatement extends DeclarationStatement {
+            public constructor() {
+                super(0 as unknown as Declaration)
+            }
+        }
+
         const machine = new IcExecutionMachine()
-        const x_var = new VariableDeclaration(VariableType.I32, 'x', {
-            initial_value: new Atom(0)
+        expect(() => machine.execute(new UnknownDeclarationStatement())).toThrow()
+    })
+
+    describe('while', () => {
+        test('i-in-1-10', () => {
+            const machine = new IcExecutionMachine()
+            const i_var = new VariableDeclaration(VariableType.I32, 'i', {
+                initial_value: new Atom(0)
+            })
+            const x_var = new VariableDeclaration(VariableType.I32, 'x', {
+                initial_value: new Atom(0)
+            })
+            machine.execute(i_var.to_statement())
+            machine.execute(x_var.to_statement())
+    
+            machine.execute(new While(
+                new BinaryOperation(Operator.LESS_THAN, i_var.get_reference(), new Atom(10)),
+                new Statements([
+                    new Assignment(
+                        x_var.get_reference(),
+                        new BinaryOperation(Operator.PLUS, x_var.get_reference(), new Atom(2))
+                    ),
+                    new Assignment(
+                        i_var.get_reference(),
+                        new BinaryOperation(Operator.PLUS, i_var.get_reference(), new Atom(1))
+                    )
+                ])
+            ))
+    
+            expect(machine.evaluate(i_var.get_reference())).toBe(10)
+            expect(machine.evaluate(x_var.get_reference())).toBe(20)
         })
-        machine.execute(x_var.to_statement())
 
-        machine.execute(new DoWhile(
-            new Atom(false),
-            new Statements([
-                new Assignment(
-                    x_var.get_reference(),
-                    new BinaryOperation(Operator.PLUS, x_var.get_reference(), new Atom(2))
-                )
-            ])
-        ))
+        test('continue', () => {
+            const machine = new IcExecutionMachine()
+            const i_var = new VariableDeclaration(VariableType.I32, 'i', {
+                initial_value: new Atom(0)
+            })
+            const x_var = new VariableDeclaration(VariableType.I32, 'x', {
+                initial_value: new Atom(0)
+            })
+            machine.execute(i_var.to_statement())
+            machine.execute(x_var.to_statement())
+    
+            machine.execute(new While(
+                new BinaryOperation(Operator.LESS_THAN, i_var.get_reference(), new Atom(10)),
+                new Statements([
+                    new Assignment(
+                        i_var.get_reference(),
+                        new BinaryOperation(Operator.PLUS, i_var.get_reference(), new Atom(1))
+                    ),
+                    new If(new BinaryOperation(Operator.LESS_THAN_OR_EQUAL, i_var.get_reference(), new Atom(5)), new Continue()),
+                    new Assignment(
+                        x_var.get_reference(),
+                        new BinaryOperation(Operator.PLUS, x_var.get_reference(), new Atom(1))
+                    )
+                ])
+            ))
+    
+            expect(machine.evaluate(i_var.get_reference())).toBe(10)
+            expect(machine.evaluate(x_var.get_reference())).toBe(5)
+        })
 
-        expect(machine.evaluate(x_var.get_reference())).toBe(2)
+        test('break', () => {
+            const machine = new IcExecutionMachine()
+            const i_var = new VariableDeclaration(VariableType.I32, 'i', {
+                initial_value: new Atom(0)
+            })
+            machine.execute(i_var.to_statement())
+    
+            machine.execute(new While(new Atom(true),
+                new Statements([
+                    new If(new BinaryOperation(Operator.GREATER_THAN, i_var.get_reference(), new Atom(5)), new Break()),
+                    new Assignment(
+                        i_var.get_reference(),
+                        new BinaryOperation(Operator.PLUS, i_var.get_reference(), new Atom(1))
+                    )
+                ])
+            ))
+    
+            expect(machine.evaluate(i_var.get_reference())).toBe(6)
+        })
+
+        test('return', () => {
+            const machine = new IcExecutionMachine()
+
+            const result = machine.execute(new While(new Atom(true), new Return(new Atom(1))))
+    
+            expect(result).toEqual({
+                type: 'return',
+                value: 1
+            })
+        })
+    })
+
+    describe('do-while', () => {
+        test('const-false-condition', () => {
+            const machine = new IcExecutionMachine()
+            const x_var = new VariableDeclaration(VariableType.I32, 'x', {
+                initial_value: new Atom(0)
+            })
+            machine.execute(x_var.to_statement())
+    
+            machine.execute(new DoWhile(
+                new Atom(false),
+                new Statements([
+                    new Assignment(
+                        x_var.get_reference(),
+                        new BinaryOperation(Operator.PLUS, x_var.get_reference(), new Atom(2))
+                    )
+                ])
+            ))
+    
+            expect(machine.evaluate(x_var.get_reference())).toBe(2)
+        })
+
+        test('continue', () => {
+            const machine = new IcExecutionMachine()
+            const i_var = new VariableDeclaration(VariableType.I32, 'i', {
+                initial_value: new Atom(0)
+            })
+            const x_var = new VariableDeclaration(VariableType.I32, 'x', {
+                initial_value: new Atom(0)
+            })
+            machine.execute(i_var.to_statement())
+            machine.execute(x_var.to_statement())
+    
+            machine.execute(new DoWhile(
+                new BinaryOperation(Operator.LESS_THAN, i_var.get_reference(), new Atom(10)),
+                new Statements([
+                    new Assignment(
+                        i_var.get_reference(),
+                        new BinaryOperation(Operator.PLUS, i_var.get_reference(), new Atom(1))
+                    ),
+                    new If(new BinaryOperation(Operator.LESS_THAN_OR_EQUAL, i_var.get_reference(), new Atom(5)), new Continue()),
+                    new Assignment(
+                        x_var.get_reference(),
+                        new BinaryOperation(Operator.PLUS, x_var.get_reference(), new Atom(1))
+                    )
+                ])
+            ))
+    
+            expect(machine.evaluate(i_var.get_reference())).toBe(10)
+            expect(machine.evaluate(x_var.get_reference())).toBe(5)
+        })
+
+        test('break', () => {
+            const machine = new IcExecutionMachine()
+            const i_var = new VariableDeclaration(VariableType.I32, 'i', {
+                initial_value: new Atom(0)
+            })
+            machine.execute(i_var.to_statement())
+    
+            machine.execute(new DoWhile(new Atom(true),
+                new Statements([
+                    new If(new BinaryOperation(Operator.GREATER_THAN, i_var.get_reference(), new Atom(5)), new Break()),
+                    new Assignment(
+                        i_var.get_reference(),
+                        new BinaryOperation(Operator.PLUS, i_var.get_reference(), new Atom(1))
+                    )
+                ])
+            ))
+    
+            expect(machine.evaluate(i_var.get_reference())).toBe(6)
+        })
+
+        test('return', () => {
+            const machine = new IcExecutionMachine()
+
+            const result = machine.execute(new DoWhile(new Atom(true), new Return(new Atom(1))))
+    
+            expect(result).toEqual({
+                type: 'return',
+                value: 1
+            })
+        })
+    })
+
+    test('unknown', () => {
+        const machine = new IcExecutionMachine()
+        expect(() => machine.execute(99 as unknown as Statement)).toThrow(/lack of implementation/)
     })
 })
 
