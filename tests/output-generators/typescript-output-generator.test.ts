@@ -38,7 +38,7 @@ async function prepare_executable(code: string): Promise<Executable> {
     return {
         execute(input: string): Promise<string> {
             return new Promise<string>((accept, reject) => {
-                const process = child_process.exec(`npm run --silent ts-node -- ${main_path}`, (err, stdout, _stderr) => {
+                const process = child_process.exec(`node ./node_modules/ts-node/dist/bin.js ${main_path}`, (err, stdout, _stderr) => {
                     if (err)
                         return reject(err)
 
