@@ -5,7 +5,7 @@ import { Transition } from '@dist/regex/transition'
 import { Context } from '@dist/regex/context'
 import { IntegerInterval } from '@dist/utils/integer-intervals-set'
 
-test('state-empty', () => {
+test('empty', () => {
     const s = new State(0)
     expect(s.id).toBe(0)
     expect(s.is_final).toBe(false)
@@ -13,7 +13,7 @@ test('state-empty', () => {
     expect(s.get_reachable_transitions().length).toBe(0)
 })
 
-test('state-empty-define-final', () => {
+test('empty-define-final', () => {
     const state_0 = new State(0, {})
     const state_1 = new State(1, {is_final: false})
     const state_2 = new State(2, {is_final: true})
@@ -22,7 +22,7 @@ test('state-empty-define-final', () => {
     expect(state_2.is_final).toBe(true)
 })
 
-test('state-deterministic-reach', () => {
+test('deterministic-reach', () => {
     const symbol_0 = new SingleSymbol(32)
     const symbol_1 = new SingleSymbol(64)
     const symbol_u = new SingleSymbol(128)
@@ -45,7 +45,7 @@ test('state-deterministic-reach', () => {
     expect(reachable[1].state.id).toBe(1)
 })
 
-test('state-deterministic-reach-loop', () => {
+test('deterministic-reach-loop', () => {
     const state_0 = new State(0)
     const state_1 = new State(1)
     state_0.add_epsilon_transition(state_1)
@@ -54,7 +54,7 @@ test('state-deterministic-reach-loop', () => {
     expect(true).toBe(true)
 })
 
-test('state-non-deterministic-reach', () => {
+test('non-deterministic-reach', () => {
     const symbol_2 = new SingleSymbol(16)
     const symbol_3 = new SingleSymbol(4)
     const symbol_4 = new SingleSymbol(8)
@@ -77,7 +77,7 @@ test('state-non-deterministic-reach', () => {
     expect(reachable[2].symbol?.contains_only(8)).toBe(true)
 })
 
-test('state-transitive-reachable-states-simple', () => {
+test('transitive-reachable-states-simple', () => {
     const symbol_1 = new SingleSymbol(16)
     const symbol_2 = new SingleSymbol(32)
     const state_0 = new State(0)
@@ -92,7 +92,7 @@ test('state-transitive-reachable-states-simple', () => {
     expect(reachable[2].id).toBe(2)
 })
 
-test('state-transitive-reachable-states-simple-epsilon', () => {
+test('transitive-reachable-states-simple-epsilon', () => {
     const state_0 = new State(0)
     const state_1 = new State(1)
     const state_2 = new State(2)
@@ -105,7 +105,7 @@ test('state-transitive-reachable-states-simple-epsilon', () => {
     expect(reachable[2].id).toBe(2)
 })
 
-test('state-transitive-reachable-states-complex', () => {
+test('transitive-reachable-states-complex', () => {
     const state_0 = new State(0)
     const state_1 = new State(1)
     const state_2 = new State(2)
@@ -131,7 +131,7 @@ test('state-transitive-reachable-states-complex', () => {
     expect(reachable[6].id).toBe(6)
 })
 
-test('state-transitive-reachable-states-loop', () => {
+test('transitive-reachable-states-loop', () => {
     const state_0 = new State(0)
     const state_1 = new State(1)
     const state_2 = new State(2)
@@ -150,7 +150,7 @@ test('state-transitive-reachable-states-loop', () => {
     expect(reachable_1[2].id).toBe(2)
 })
 
-test('state-multi-transition-add', () => {
+test('multi-transition-add', () => {
     const state_0 = new State(0)
     const state_1 = new State(1)
     const symbol_0 = new SingleSymbol(32)
@@ -164,7 +164,7 @@ test('state-multi-transition-add', () => {
     expect(state_0.transitions[1].state.id).toBe(1)
 })
 
-test('state-transition-remove-all', () => {
+test('transition-remove-all', () => {
     const state_0 = new State(0)
     const state_1 = new State(1)
     state_0.add_epsilon_transition(state_1)
@@ -174,6 +174,38 @@ test('state-transition-remove-all', () => {
     state_0.remove_all_transitions()
     expect(state_0.transitions.length).toBe(0)
     expect(state_1.transitions.length).toBe(0)
+})
+
+describe('get-transitively-reachable-final-states', () => {
+    test('chain', () => {
+        const context = new Context()
+        const s0 = context.create_new_state()
+        const s1 = context.create_new_state()
+        const s2 = context.create_new_state()
+        const s3 = context.create_new_state()
+        s0.add_epsilon_transition(s1)
+        s1.add_transition(new SingleSymbol('k'.charCodeAt(0)), s2)
+        s2.add_transition(new SingleSymbol('o'.charCodeAt(0)), s3)
+        s3.is_final = true
+        const final_states = s0.get_transitively_reachable_final_states()
+        expect(final_states).toHaveLength(1)
+        expect(final_states[0].id).toBe(3)
+    })
+
+    test('double-final', () => {
+        const context = new Context()
+        const s0 = context.create_new_state()
+        const s1 = context.create_new_state()
+        const s2 = context.create_new_state()
+        s0.add_transition(new SingleSymbol('l'.charCodeAt(0)), s1)
+        s0.add_transition(new SingleSymbol('o'.charCodeAt(0)), s2)
+        s1.is_final = true
+        s2.is_final = true
+        const final_states = s0.get_transitively_reachable_final_states().sort((a, b) => a.id - b.id)
+        expect(final_states).toHaveLength(2)
+        expect(final_states[0].id).toBe(1)
+        expect(final_states[1].id).toBe(2)
+    })
 })
 
 describe('final-calculation', () => {
@@ -390,48 +422,7 @@ describe('final-calculation', () => {
     })
 })
 
-/*
-test('state-is-deterministic-false-epsilon', () => {
-    const context = new Context()
-    const states = [
-        context.create_new_state(),
-        context.create_new_state()
-    ]
-    states[0].add_epsilon_transition(states[1])
-    expect(states[0].is_deterministic()).toBe(false)
-    expect(states[1].is_deterministic()).toBe(true)
-})
-
-test('state-is-deterministic-false-double-symbol', () => {
-    const context = new Context()
-    const states = [
-        context.create_new_state(),
-        context.create_new_state(),
-        context.create_new_state()
-    ]
-    states[0].add_transition(new SingleSymbol(2), states[1])
-    states[0].add_transition(new SingleSymbol(2), states[2])
-    expect(states[0].is_deterministic()).toBe(false)
-    expect(states[1].is_deterministic()).toBe(true)
-    expect(states[2].is_deterministic()).toBe(true)
-})
-
-test('state-is-deterministic-true', () => {
-    const context = new Context()
-    const states = [
-        context.create_new_state(),
-        context.create_new_state(),
-        context.create_new_state()
-    ]
-    states[0].add_transition(new SingleSymbol(2), states[1])
-    states[0].add_transition(new SingleSymbol(4), states[2])
-    expect(states[0].is_deterministic()).toBe(true)
-    expect(states[1].is_deterministic()).toBe(true)
-    expect(states[2].is_deterministic()).toBe(true)
-})
-*/
-
-describe('get_transitions_multi_state_map', () => {
+describe('get-transitions-multi-state-map', () => {
     test('no-shared', () => {
         const context = new Context()
         const states = [
@@ -482,6 +473,29 @@ describe('get_transitions_multi_state_map', () => {
         expect(map.filter(x => x.symbol.contains_only(4))).toHaveLength(1)
         expect(map.find(x => x.symbol.contains_only(2))?.states.map(x => x.id).sort()).toEqual([2])
         expect(map.find(x => x.symbol.contains_only(3))?.states.map(x => x.id).sort()).toEqual([1, 2])
+        expect(map.find(x => x.symbol.contains_only(4))?.states.map(x => x.id).sort()).toEqual([1])
+    })
+
+    test('all-present-same-state', () => {
+        const context = new Context()
+        const states = [
+            context.create_new_state(),
+            context.create_new_state()
+        ]
+        const symbols = [
+            new MultiSymbol([new IntegerInterval(3, 5)]),
+            new MultiSymbol([new IntegerInterval(2, 4)])
+        ]
+
+        states[0].add_transition(symbols[0], states[1])
+        states[0].add_transition(symbols[1], states[1])
+        const map = states[0].get_transitions_multi_state_map()
+        expect(map).toHaveLength(3)
+        expect(map.filter(x => x.symbol.contains_only(2))).toHaveLength(1)
+        expect(map.filter(x => x.symbol.contains_only(3))).toHaveLength(1)
+        expect(map.filter(x => x.symbol.contains_only(4))).toHaveLength(1)
+        expect(map.find(x => x.symbol.contains_only(2))?.states.map(x => x.id).sort()).toEqual([1])
+        expect(map.find(x => x.symbol.contains_only(3))?.states.map(x => x.id).sort()).toEqual([1])
         expect(map.find(x => x.symbol.contains_only(4))?.states.map(x => x.id).sort()).toEqual([1])
     })
 
@@ -758,80 +772,63 @@ describe('remove-non-determinism', () => {
     })
 })
 
-test('state-match-a*', () => {
-    const context = new Context()
-    const s0 = context.create_new_state()
-    s0.is_final = true
-    s0.add_transition(new SingleSymbol('a'.codePointAt(0)!), s0)
-    expect(s0.match('')).toBe('')
-    expect(s0.match('b')).toBe('')
-    expect(s0.match('a')).toBe('a')
-    expect(s0.match('aaaaa')).toBe('aaaaa')
-    expect(s0.match('aaaaaaaabbbbaaaa')).toBe('aaaaaaaa')
-})
-
-test('state-match-(ab)*', () => {
-    const context = new Context()
-    const s0 = context.create_new_state()
-    const s1 = context.create_new_state()
-    s0.is_final = true
-    s0.add_transition(new SingleSymbol('a'.codePointAt(0)!), s1)
-    s1.add_transition(new SingleSymbol('b'.codePointAt(0)!), s0)
-    expect(s0.match('')).toBe('')
-    expect(s0.match('ab')).toBe('ab')
-    expect(s0.match('abab')).toBe('abab')
-    expect(s0.match('a')).toBe('')
-    expect(s0.match('ababa')).toBe('abab')
-    expect(s0.match('ababxxabab')).toBe('abab')
-})
-
-test('state-match-ab?c', () => {
-    const context = new Context()
-    const s0 = context.create_new_state()
-    const s1 = context.create_new_state()
-    const s2 = context.create_new_state()
-    const s3 = context.create_new_state()
-    s3.is_final = true
-    s0.add_transition(new SingleSymbol('a'.codePointAt(0)!), s1)
-    s1.add_transition(new SingleSymbol('b'.codePointAt(0)!), s2)
-    s1.add_transition(new SingleSymbol('c'.codePointAt(0)!), s3)
-    s2.add_transition(new SingleSymbol('c'.codePointAt(0)!), s3)
-    expect(s0.match('ac')).toBe('ac')
-    expect(s0.match('abc')).toBe('abc')
-    expect(s0.match('')).toBe(false)
-    expect(s0.match('aabc')).toBe(false)
-    expect(s0.match('ab')).toBe(false)
-    expect(s0.match('a')).toBe(false)
-})
-
-describe('get_transitively_reachable_final_states', () => {
-    test('chain', () => {
+describe('match', () => {
+    test('a*', () => {
+        const context = new Context()
+        const s0 = context.create_new_state()
+        s0.is_final = true
+        s0.add_transition(new SingleSymbol('a'.codePointAt(0)!), s0)
+        expect(s0.match('')).toBe('')
+        expect(s0.match('b')).toBe('')
+        expect(s0.match('a')).toBe('a')
+        expect(s0.match('aaaaa')).toBe('aaaaa')
+        expect(s0.match('aaaaaaaabbbbaaaa')).toBe('aaaaaaaa')
+    })
+    
+    test('(ab)*', () => {
+        const context = new Context()
+        const s0 = context.create_new_state()
+        const s1 = context.create_new_state()
+        s0.is_final = true
+        s0.add_transition(new SingleSymbol('a'.codePointAt(0)!), s1)
+        s1.add_transition(new SingleSymbol('b'.codePointAt(0)!), s0)
+        expect(s0.match('')).toBe('')
+        expect(s0.match('ab')).toBe('ab')
+        expect(s0.match('abab')).toBe('abab')
+        expect(s0.match('a')).toBe('')
+        expect(s0.match('ababa')).toBe('abab')
+        expect(s0.match('ababxxabab')).toBe('abab')
+    })
+    
+    test('ab?c', () => {
         const context = new Context()
         const s0 = context.create_new_state()
         const s1 = context.create_new_state()
         const s2 = context.create_new_state()
         const s3 = context.create_new_state()
-        s0.add_epsilon_transition(s1)
-        s1.add_transition(new SingleSymbol('k'.charCodeAt(0)), s2)
-        s2.add_transition(new SingleSymbol('o'.charCodeAt(0)), s3)
         s3.is_final = true
-        const final_states = s0.get_transitively_reachable_final_states()
-        expect(final_states).toHaveLength(1)
-        expect(final_states[0].id).toBe(3)
+        s0.add_transition(new SingleSymbol('a'.codePointAt(0)!), s1)
+        s1.add_transition(new SingleSymbol('b'.codePointAt(0)!), s2)
+        s1.add_transition(new SingleSymbol('c'.codePointAt(0)!), s3)
+        s2.add_transition(new SingleSymbol('c'.codePointAt(0)!), s3)
+        expect(s0.match('ac')).toBe('ac')
+        expect(s0.match('abc')).toBe('abc')
+        expect(s0.match('')).toBe(false)
+        expect(s0.match('aabc')).toBe(false)
+        expect(s0.match('ab')).toBe(false)
+        expect(s0.match('a')).toBe(false)
     })
-
-    test('double-final', () => {
+    
+    test('wrong-machine-id', () => {
         const context = new Context()
         const s0 = context.create_new_state()
         const s1 = context.create_new_state()
-        const s2 = context.create_new_state()
-        s0.add_transition(new SingleSymbol('l'.charCodeAt(0)), s1)
-        s0.add_transition(new SingleSymbol('o'.charCodeAt(0)), s2)
         s1.is_final = true
-        s2.is_final = true
-        const final_states = s0.get_transitively_reachable_final_states().sort((a, b) => a.id - b.id)
-        expect(final_states).toHaveLength(2)
-        expect(final_states[0].id).toBe(1)
-        expect(final_states[1].id).toBe(2)
-    })
+        s1.machine_id = 101
+        s0.add_transition(new SingleSymbol('a'.codePointAt(0)!), s1)
+        expect(s0.match('')).toBe(false)
+        expect(s0.match('a')).toBe('a')
+        expect(s0.match('a', {machine_id: 101})).toBe('a')
+        expect(s0.match('a', {machine_id: 102})).toBe(false)
+    })    
 })

@@ -1,4 +1,5 @@
 import { Production } from '@dist/ast/production'
+import { ProductionNode, ProductionNodeType } from '@dist/ast/production-node'
 import { Terminal } from '@dist/ast/terminal'
 import { TerminalUsage } from '@dist/ast/terminal-usage'
 import { Variable } from '@dist/ast/variable'
@@ -34,6 +35,17 @@ test('simple', () => {
     expect(production.nodes[1].name).toEqual('else')
     expect(production.location).toEqual(location)
     expect(production.is_epsilon()).toBe(false)
+})
+
+test('unknown-node', () => {
+    class FakeProductionNode extends ProductionNode {
+        public constructor() {
+            super(location, 'niv-mizzet' as unknown as ProductionNodeType, 'parun')
+        }
+    }
+
+    const production = new Production(location, [new FakeProductionNode()])
+    expect(() => production.terminals_maps).toThrow('unknown production node')
 })
 
 describe('terminals-maps', () => {

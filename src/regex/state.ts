@@ -182,20 +182,14 @@ export class State {
 
         // All abstract-symbols contained in this variable are disjunctive.
         const map: {symbol: AbstractSymbol, states: State[]}[] = []
-        const first_transition = transitions.shift()!
-        
-        map.push({
-            symbol: first_transition.symbol!,
-            states: [first_transition.state]
-        })
 
         for (let transition of transitions) {
             let symbol = transition.symbol!
 
-            for (let i = 0, n = map.length; i < n; i += 1) {
-                if (!symbol.represents_something())
-                    break
+            if (!symbol.represents_something())
+                continue
 
+            for (let i = 0, n = map.length; i < n; i += 1) {
                 const entry = map[i]
                 const fragmentation = AbstractSymbol.fragment(entry.symbol, symbol)
 
@@ -205,7 +199,7 @@ export class State {
                         entry.symbol = fragmentation.first_exclusive
                         const states = [...entry.states]
 
-                        if (states.find(x => x.id === transition.state.id) === undefined)
+                        if (!states.some(x => x.id === transition.state.id))
                             states.push(transition.state)
                         
                         map.push({

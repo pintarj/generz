@@ -120,6 +120,16 @@ test('initial-states-create-additional', () => {
     expect(state_0_1.id).toBe(2)
 })
 
+describe('errors', () => {
+    test('not-initia-or-virtual', () => {
+        const context = new Context()
+        const state_0 = context.create_new_state()
+        const state_1 = context.create_new_state()
+        const map = new NonDeterministicStatesMap(context, [state_0])
+        expect(() => map.get_or_create([state_1])).toThrow(/not initial.*not virtual/)
+    })
+})
+
 describe('overlapping', () => {
     test('different-states-same-virtual-state', () => {
         const context = new Context()

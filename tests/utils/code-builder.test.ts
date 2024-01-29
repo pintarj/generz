@@ -12,6 +12,13 @@ test('print', () => {
     expect(builder.to_string()).toBe('titan')
 })
 
+test('print2x', () => {
+    const builder = new CodeBuilder()
+    builder.print('lightning')
+    builder.print(' bolt')
+    expect(builder.to_string()).toBe('lightning bolt')
+})
+
 test('println', () => {
     const builder = new CodeBuilder()
     builder.println('wolf')
