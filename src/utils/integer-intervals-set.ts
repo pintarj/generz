@@ -103,7 +103,7 @@ export class IntegerIntervalsSet {
             : [interval.start, interval.end]
 
         const r0 = this.find_number_interval(start)
-        const r1 = this.find_number_interval(end)
+        const r1 = this.find_number_interval(end - 1)
         let insert_index = r0.index
         let to_remove = r1.index - r0.index
         
