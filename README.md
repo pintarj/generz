@@ -1,5 +1,5 @@
 # generz
-![Node.js CI](https://github.com/pintarj/generz/workflows/Node.js%20CI/badge.svg?branch=master) [![install size](https://packagephobia.now.sh/badge?p=generz)](https://packagephobia.now.sh/result?p=generz)
+![Node.js CI](https://github.com/pintarj/generz/actions/workflows/nodejs.yml/badge.svg) [![install size](https://packagephobia.now.sh/badge?p=generz)](https://packagephobia.now.sh/result?p=generz)
 
 A programming (?) language that generates code for building compilers.
 
