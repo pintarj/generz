@@ -41,7 +41,7 @@ test('empty', () => {
 
 test('invalid-end', () => {
     const source = `id`
-    expect(() => parse_from_source(source)).toThrowError("expected token `EOF`, but found `IDENTIFIER`")
+    expect(() => parse_from_source(source)).toThrow("expected token `EOF`, but found `IDENTIFIER`")
 })
 
 describe('delimiters', () => {
@@ -118,6 +118,18 @@ describe('terminals', () => {
                 }))
             ]))
         })
+    })
+})
+
+describe('errors', () => {
+    test('empty-production', () => {
+        const source = dedent`
+            variable X {
+                production
+            }
+        `
+
+        expect(() => parse_from_source(source)).toThrow('Expected at least one')
     })
 })
 

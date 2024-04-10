@@ -186,3 +186,8 @@ test('skip-whitespaces', () => {
         lexeme: ''
     }])
 })
+
+test('parse-illegal', () => {
+    const source = `~`
+    expect(() => parse(new SourceReader(new StringReader(source)))).toThrow('Unknown lexeme')
+})

@@ -4,6 +4,7 @@ import { State } from '@dist/regex/state'
 import { Context } from '@dist/regex/context'
 import { CodeError } from '@dist/error'
 import { Point } from '@dist/source/location'
+import { SingleSymbol } from '@dist/regex/single-symbol'
 
 function f(
     regex: string,
@@ -362,6 +363,21 @@ describe('merge', () => {
         expect(regex.match('xy', {machine_id: 1234})).toBe('xy')
         expect(regex.match('xyz', {machine_id: 4321})).toBe('xyz')
         expect(regex.match('azz', {machine_id: 4321})).toBe('azz')
+    })
+
+    test('non-disjunctive-final-states', () => {
+        const context = new Context()
+        const s = [
+            context.create_new_state(),
+            context.create_new_state(),
+            context.create_new_state()
+        ]
+
+        s[0].add_transition(new SingleSymbol(1), s[2])
+        s[1].add_transition(new SingleSymbol(2), s[2])
+        s[2].is_final = true
+
+        expect(() => RegularExpression.merge(context, [s[0], s[1]])).toThrow(/non-disjunctive.+final.+states/i)
     })
 })
 

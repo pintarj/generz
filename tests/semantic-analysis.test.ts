@@ -1,10 +1,16 @@
-import { StringReader } from '@dist/reader'
-import { SourceReader } from '@dist/source/source-reader'
+import { Declaration, DeclarationType } from '@dist/ast/declaration'
+import { Production } from '@dist/ast/production'
+import { ProductionNode, ProductionNodeType } from '@dist/ast/production-node'
+import { Source } from '@dist/ast/source'
+import { Variable } from '@dist/ast/variable'
 import { parse as lexical_parse } from '@dist/lexical-analysis'
-import { parse as syntax_parse } from '@dist/syntax-analysis'
-import { analyze as semantic_analyze } from '@dist/semantic-analysis'
-import dedent from 'dedent'
+import { StringReader } from '@dist/reader'
 import { Context } from '@dist/regex/context'
+import { analyze as semantic_analyze } from '@dist/semantic-analysis'
+import { Location, Point } from '@dist/source/location'
+import { SourceReader } from '@dist/source/source-reader'
+import { parse as syntax_parse } from '@dist/syntax-analysis'
+import dedent from 'dedent'
 
 function analyze(source: string): void {
     const file = 'fake.erz'
@@ -318,5 +324,36 @@ describe('ambiguous-variable', () => {
             `
             expect(() => analyze(source)).toThrow('Variable `X` is ambiguous, terminal `a` leads to multiple productions.')
         })
+    })
+})
+
+describe('lack-of-implementation', () => {
+    const l = new Location(new Point(0, 0), new Point(0, 0))
+
+    test('unknown-declaration-type', () => {
+        const UnknownDeclaration = class extends Declaration {
+            public constructor() {
+                super(l, 'fake-type' as DeclarationType, 'X')
+            }
+        }
+
+        const f = () => semantic_analyze('file.erz', new Source(l, [new UnknownDeclaration()]))
+        expect(f).toThrow(/lack of implementation/i)
+    })
+
+    test('unknown-production-node-type', () => {
+        const UnknownProductionNode = class extends ProductionNode {
+            public constructor() {
+                super(l, 'fake-type' as ProductionNodeType, 'X')
+            }
+        }
+
+        const production_node = new UnknownProductionNode()
+        const production = new Production(l, [production_node])
+        const variable = new Variable(l, 'Y', [production])
+        const source = new Source(l, [variable])
+
+        const f = () => semantic_analyze('file.erz', source)
+        expect(f).toThrow(/lack of implementation/i)
     })
 })

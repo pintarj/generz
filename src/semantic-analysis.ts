@@ -147,16 +147,27 @@ export function analyze(file: string, source: Source): void {
 
             for (const production of cursor.current.productions) {
                 for (const node of production.nodes) {
-                    if (node.type === ProductionNodeType.TERMINAL_USAGE) // no loop can occur through this production
-                        break
+                    let should_break = false
 
-                    if (node.type === ProductionNodeType.VARIABLE_USAGE) {
-                        const target = (node as VariableUsage).reference
-                        resolutions.push({current: target, previous: [...cursor.previous, cursor.current]})
-
-                        if (!target.epsilon)
+                    switch (node.type) {
+                        case ProductionNodeType.TERMINAL_USAGE: {
+                            should_break = true
                             break
+                        }
+
+                        case ProductionNodeType.VARIABLE_USAGE: {
+                            const target = (node as VariableUsage).reference
+                            resolutions.push({current: target, previous: [...cursor.previous, cursor.current]})
+
+                            if (!target.epsilon)
+                                should_break = true
+                            
+                            break
+                        }
                     }
+
+                    if (should_break)
+                        break
                 }
             }
         }
