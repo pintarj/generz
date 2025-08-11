@@ -121,12 +121,12 @@ class ICGenerator {
             initial_value: new FunctionCall(parsing_function.name)
         })
 
-        let branches: Statement|undefined = !variable.epsilon
+        let branches: Statement = !variable.epsilon
             ? (new FunctionCall('throw_error', {args: [
                 new Atom('program reached invalid state: unexpected terminal (id: {}) parsed'),
                 variable_terminal_id.get_reference()
             ]})).to_statement()
-            : undefined
+            : new Statements([])
 
         for (const terminals_map of variable.terminals_maps) {
             const statements: Statement[] = []
@@ -168,13 +168,13 @@ class ICGenerator {
                 condition,
                 new Statements(statements),
                 {
-                    else_body: branches
+                    // ugly, but works
+                    else_body: (branches instanceof Statements && branches.statements.length === 0)
+                        ? undefined
+                        : branches
                 }
             )
         }
-
-        if (branches === undefined)
-            throw new Error('creating variable parsing function without branches')
 
         const body = new Statements([])
 
