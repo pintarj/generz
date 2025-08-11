@@ -14,11 +14,10 @@ import { While } from './ic/while'
 import { State } from './regex/state'
 import { Transition } from './regex/transition'
 
-function enhance_printable_comment(atom: Atom): Atom {
-    if (Number.isSafeInteger(atom.value))
-        atom.comment = JSON.stringify(String.fromCharCode(atom.value))
-
-    return atom
+function new_char_atom(code: number): Atom {
+    return new Atom(code, {
+        comment: JSON.stringify(String.fromCharCode(code))
+    })
 }
 
 function build_transition_condition(transition: Transition, input_expression: Expression): Expression {
@@ -26,11 +25,11 @@ function build_transition_condition(transition: Transition, input_expression: Ex
                 
     const intervals_conditions = intervals.map(interval =>
         (interval.length === 1)
-            ? new BinaryOperation(Operator.EQUAL, input_expression, enhance_printable_comment(new Atom(interval.start)))
+            ? new BinaryOperation(Operator.EQUAL, input_expression, new_char_atom(interval.start))
             : new BinaryOperation(
                 Operator.AND,
-                new BinaryOperation(Operator.GREATER_THAN_OR_EQUAL, input_expression, enhance_printable_comment(new Atom(interval.start))),
-                new BinaryOperation(Operator.LESS_THAN_OR_EQUAL, input_expression, enhance_printable_comment(new Atom(interval.end - 1)))
+                new BinaryOperation(Operator.GREATER_THAN_OR_EQUAL, input_expression, new_char_atom(interval.start)),
+                new BinaryOperation(Operator.LESS_THAN_OR_EQUAL, input_expression, new_char_atom(interval.end - 1))
             )
     )
     
@@ -44,14 +43,6 @@ interface Branch {
     body: Statement
 }
 
-function reduce_branches(branches: Array<Branch>, else_body: Statement|undefined): Statement {
-    const reducer = (else_body: Statement|undefined, branch: Branch): Statement => {
-        return new If(branch.condition, branch.body, {else_body})
-    }
-
-    return branches.reduceRight(reducer, else_body) || new Statements([])
-}
-
 class Vars {
     private input_var: VariableDeclaration|undefined
     private state_var: VariableDeclaration|undefined
@@ -59,19 +50,6 @@ class Vars {
     public constructor() {
         this.input_var = undefined
         this.state_var = undefined
-    }
-
-    public declare_state_var(initial_value: number): VariableDeclaration {
-        if (this.state_var !== undefined)
-            throw new Error('Variable `state` already declared.')
-
-        this.state_var = new VariableDeclaration(VariableType.I32, 'state', {
-            mutable: true,
-            initial_value: new Atom(initial_value),
-            comment: 'Will contain the id of the current state of the machine.'
-        })
-
-        return this.state_var
     }
 
     public get input_ref(): VariableReference {
@@ -88,7 +66,11 @@ class Vars {
 
     public get state_ref(): VariableReference {
         if (this.state_var === undefined) {
-            this.state_var = this.declare_state_var(-1)
+            this.state_var = new VariableDeclaration(VariableType.I32, 'state', {
+                mutable: true,
+                initial_value: new Atom(-1),
+                comment: 'Will contain the id of the current state of the machine.'
+            })
         }
 
         return this.state_var.get_reference()
@@ -179,9 +161,6 @@ export function regex_to_ic(
                 }
             }
 
-            if (transitions.looping.length > 1)
-                throw new Error('bug: no state should have more than one looping-transition')
-
             for (const transition of transitions.looping) {
                 const condition = build_transition_condition(transition, input_expr)
                 let loop: Statement
@@ -251,7 +230,7 @@ export function regex_to_ic(
                 branches.push({condition, body})
             }
 
-            state_body = reduce_branches(branches, fail_body)
+            state_body = branches.reduceRight((else_body, branch) => new If(branch.condition, branch.body, {else_body}), fail_body)
         }
 
         if (handle_final && state.is_final) {
@@ -301,7 +280,7 @@ export function regex_to_ic(
             args: [new Atom('program reached invalid state: regex machine state unknown')]
         })).to_statement()
 
-        const while_body = reduce_branches(branches, fail_body)
+        const while_body = branches.reduceRight((else_body, branch) => new If(branch.condition, branch.body, {else_body}), fail_body)
     
         statements.push(
             new If(
