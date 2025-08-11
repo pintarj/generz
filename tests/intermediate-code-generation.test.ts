@@ -127,6 +127,42 @@ describe('a', () => {
     })
 })
 
+describe('ab', () => {
+    let parser: VirtualParser|undefined
+
+    beforeAll(() => {
+        parser = new VirtualParser(f(dedent`
+            terminal a /a/
+            terminal b /b/
+            
+            variable X0 {
+                production a b
+                production b a
+            }
+
+            variable X {
+                production X0
+            }
+        `))
+    })
+
+    test('empty', async () => {
+        expect(() => parser!.parse('')).toThrow()
+    })
+
+    test('ab', async () => {
+        expect(() => parser!.parse('ab')).not.toThrow()
+    })
+
+    test('ba', async () => {
+        expect(() => parser!.parse('ba')).not.toThrow()
+    })
+
+    test('wrong', async () => {
+        expect(() => parser!.parse('1111')).toThrow(/expected.+but.+found/)
+    })
+})
+
 describe('binary', () => {
     let parser: VirtualParser|undefined
 

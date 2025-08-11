@@ -1,20 +1,23 @@
 import { DeclarationType } from './ast/declaration'
 import { Delimiter } from './ast/delimiter'
+import { ProductionNodeType } from './ast/production-node'
 import { Source } from './ast/source'
 import { Terminal } from './ast/terminal'
 import { TerminalUsage } from './ast/terminal-usage'
 import { Variable } from './ast/variable'
+import { VariableUsage } from './ast/variable-usage'
+import { Assignment } from './ic/assignment'
 import { Atom } from './ic/atom'
 import { BinaryOperation, Operator } from './ic/binary-operation'
 import { Declaration } from './ic/declaration'
-import { DeclarationStatement } from './ic/declaration-statement'
 import { Function } from './ic/function'
 import { FunctionCall } from './ic/function-call'
 import { If } from './ic/if'
 import { Return } from './ic/return'
 import { Statement } from './ic/statement'
 import { Statements } from './ic/statements'
-import { VariableDeclaration, VariableType } from './ic/variable-declaration'
+import { VariableDeclaration, VariableDeclarationConstructorOptions, VariableType } from './ic/variable-declaration'
+import { VariableReference } from './ic/variable-reference'
 import { regex_to_ic } from './regex-to-ic'
 import { Context } from './regex/context'
 import { RegularExpression } from './regular-expression'
@@ -24,6 +27,7 @@ class ICGenerator {
     private readonly terminals_map: Map<string, Terminal&{id: number}>
     private readonly terminals_parsing_functions_map: Map<string, Function>
     private readonly delimiter: Delimiter|undefined
+    private variable_cached_terminal_id: VariableDeclaration|undefined
 
     public constructor(
         private regex_context: Context,
@@ -54,6 +58,18 @@ class ICGenerator {
                 }
             }
         }
+    }
+
+    private get_cached_terminal_id_reference(): VariableReference {
+        if (this.variable_cached_terminal_id === undefined) {
+            this.variable_cached_terminal_id = new VariableDeclaration(VariableType.I32, 'cached_terminal_id', {
+                mutable: true,
+                initial_value: new Atom(-1),
+                comment: 'Contains the id of the currently cached terminal,\nor -1 if there is nothing cached.'
+            })
+        }
+
+        return this.variable_cached_terminal_id.get_reference()
     }
 
     private generate_function_for_parsing_terminals(terminals: Terminal[], options?: {epsilon?: boolean}): Function {
@@ -113,13 +129,21 @@ class ICGenerator {
         ]))
     }
 
-    private generate_function_for_parsing_variable(variable: Variable): Function {
+    private generate_function_for_parsing_variable(variable: Variable, considers_terminal_caching: boolean): Function {
         const all_possible_terminals = variable.terminals_maps.map(m => m.terminals).flat()
         const parsing_function = this.generate_function_for_parsing_terminals(all_possible_terminals, {epsilon: variable.epsilon})
+        const variable_terminal_id_creation_options: VariableDeclarationConstructorOptions = {}
 
-        const variable_terminal_id = new VariableDeclaration(VariableType.I32, 'terminal_id', {
-            initial_value: new FunctionCall(parsing_function.name)
-        })
+        if (considers_terminal_caching) {
+            variable_terminal_id_creation_options.mutable = true
+            variable_terminal_id_creation_options.initial_value = this.get_cached_terminal_id_reference()
+            variable_terminal_id_creation_options.comment = 'The id of the currently parsed terminal,\n considering if there was any cached terminal.'
+        } else {
+            variable_terminal_id_creation_options.initial_value = new FunctionCall(parsing_function.name)
+            variable_terminal_id_creation_options.comment = 'The id of the currently parsed terminal.'
+        }
+
+        const variable_terminal_id = new VariableDeclaration(VariableType.I32, 'terminal_id', variable_terminal_id_creation_options)
 
         let branches: Statement = !variable.epsilon
             ? (new FunctionCall('throw_error', {args: [
@@ -130,6 +154,16 @@ class ICGenerator {
 
         for (const terminals_map of variable.terminals_maps) {
             const statements: Statement[] = []
+            const first_node = terminals_map.nodes[0]
+
+            if (first_node.type === ProductionNodeType.TERMINAL_USAGE) {
+                statements.push((new FunctionCall('reset')).to_statement())
+            } else {
+                statements.push(
+                    new Assignment(this.get_cached_terminal_id_reference(), variable_terminal_id.get_reference()),
+                    (new FunctionCall(`parse_V${first_node.name}`)).to_statement()
+                )
+            }
 
             for (const node of terminals_map.nodes.slice(1)) {
                 if (node.name.charAt(0) == node.name.charAt(0).toLocaleLowerCase()) {
@@ -182,13 +216,22 @@ class ICGenerator {
             body.statements.push((new FunctionCall('consume_delimiter')).to_statement())
         }
 
-        body.statements.push(
-            new DeclarationStatement(variable_terminal_id, {
-                comment: 'The id of the currently parsed terminal.'
-            }),
-            (new FunctionCall('reset')).to_statement(),
-            branches
-        )
+        body.statements.push(variable_terminal_id.to_statement())
+
+        if (considers_terminal_caching) {
+            const if_not_cached = new If(
+                new BinaryOperation(
+                    Operator.EQUAL,
+                    variable_terminal_id.get_reference(),
+                    new Atom(-1)
+                ),
+                new Assignment(variable_terminal_id.get_reference(), new FunctionCall(parsing_function.name))
+            )
+
+            body.statements.push(if_not_cached)
+        }
+
+        body.statements.push(branches)
 
         return new Function(`parse_V${variable.name}`, [], VariableType.VOID, body, {
             comment: `Function that parses the \`${variable.name}\` variable.`
@@ -231,12 +274,33 @@ class ICGenerator {
             declarations.push(this.generate_function_consume_delimiter(this.delimiter))
         }
 
-        const variables_parsing_functions = Array.from(this.variables_map.values()).map(x => this.generate_function_for_parsing_variable(x))
-        
+        const variables_that_considers_terminal_caching = new Set<Variable>()
+
+        for (const variable of this.variables_map.values()) {
+            for (const terminals_map of variable.terminals_maps) {
+                const first_node = terminals_map.nodes[0]
+
+                if (first_node.type === ProductionNodeType.VARIABLE_USAGE) {
+                    variables_that_considers_terminal_caching.add((first_node as VariableUsage).reference)
+                }
+            }
+        }
+
+        const variables_parsing_functions = Array.from(this.variables_map.values()).map(variable => {
+            const considers_terminal_caching = variables_that_considers_terminal_caching.has(variable)
+            return this.generate_function_for_parsing_variable(variable, considers_terminal_caching)
+        })
+
+        const function_root = this.generate_function_root(variables_parsing_functions[variables_parsing_functions.length - 1])
+
+        if (this.variable_cached_terminal_id !== undefined) {
+            declarations.push(this.variable_cached_terminal_id)
+        }
+
         declarations.push(
             ...this.terminals_parsing_functions_map.values(),
             ...variables_parsing_functions,
-            this.generate_function_root(variables_parsing_functions[variables_parsing_functions.length - 1])
+            function_root
         )
 
         return declarations
