@@ -1,15 +1,15 @@
 import fs from 'fs'
-import Args from './args'
-import { SourceReader } from './source/source-reader'
-import { StringReader } from './reader'
-import { Context } from './regex/context'
-import { parse as lexical_analysis } from './lexical-analysis'
-import { parse as syntax_analysis } from './syntax-analysis'
-import { analyze as semantic_analysis } from './semantic-analysis'
-import { generate as generate_intermediate_code } from './intermediate-code-generation'
-import { generate as generate_output, OutputGeneratorInterface } from './output-generation'
-import { TypescriptOutputGenerator } from './output-generators/typescript-output-generator'
-import { CPlusPlusOutputGenerator } from './output-generators/cplusplus-output-generator'
+import Args from './args.js'
+import { SourceReader } from './source/source-reader.js'
+import { StringReader } from './reader.js'
+import { Context } from './regex/context.js'
+import { parse as lexical_analysis } from './lexical-analysis.js'
+import { parse as syntax_analysis } from './syntax-analysis.js'
+import { analyze as semantic_analysis } from './semantic-analysis.js'
+import { generate as generate_intermediate_code } from './intermediate-code-generation.js'
+import { generate as generate_output, OutputGeneratorInterface } from './output-generation.js'
+import { TypescriptOutputGenerator } from './output-generators/typescript-output-generator.js'
+import { CPlusPlusOutputGenerator } from './output-generators/cplusplus-output-generator.js'
 
 export default class Pipeline {
     public constructor(readonly args: Args) {
@@ -21,6 +21,7 @@ export default class Pipeline {
 
         switch (ext) {
             case 'ts':
+            case 'mts':
                 return new TypescriptOutputGenerator()
             
             case 'cpp':

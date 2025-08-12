@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-import Args from './args'
-import Pipeline from './pipeline'
-import { ArgsError, CodeError, InternalError } from './error'
+import Args from './args.js'
+import Pipeline from './pipeline.js'
+import { ArgsError, CodeError, InternalError } from './error.js'
 
 try {
     const args     = Args.parse()

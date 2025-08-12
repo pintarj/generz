@@ -1,6 +1,6 @@
-import { Declaration, DeclarationConstructorOptions } from './declaration'
-import { Statement } from './statement'
-import { VariableDeclaration, VariableType } from './variable-declaration'
+import { Declaration, DeclarationConstructorOptions } from './declaration.js'
+import { Statement } from './statement.js'
+import { VariableDeclaration, VariableType } from './variable-declaration.js'
 
 export class Function extends Declaration {
     public constructor(

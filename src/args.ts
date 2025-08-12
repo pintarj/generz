@@ -1,6 +1,7 @@
 import fs from 'fs'
 import yargs from 'yargs'
-import { ArgsError } from './error'
+import { hideBin } from 'yargs/helpers'
+import { ArgsError } from './error.js'
 
 export default class Args {
     public readonly file: string
@@ -16,7 +17,7 @@ export default class Args {
     }
 
     public static parse() {
-        const args = yargs
+        const args = yargs(hideBin(process.argv))
             .scriptName('generz')
             .command('$0 <file>', 'compiles an .erz source file')
             .option('o', {

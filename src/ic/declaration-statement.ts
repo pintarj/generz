@@ -1,5 +1,5 @@
-import { Declaration } from './declaration'
-import { Statement, StatementConstructorOptions } from './statement'
+import { Declaration } from './declaration.js'
+import { Statement, StatementConstructorOptions } from './statement.js'
 
 export class DeclarationStatement extends Statement {
     public constructor(

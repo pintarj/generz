@@ -1,7 +1,7 @@
-import { Context } from '@dist/regex/context'
-import { NonDeterministicStatesMap } from '@dist/regex/non-deterministic-states-map'
-import { State } from '@dist/regex/state'
-import { SingleSymbol } from '@dist/regex/single-symbol'
+import { Context } from '@dist/regex/context.js'
+import { NonDeterministicStatesMap } from '@dist/regex/non-deterministic-states-map.js'
+import { State } from '@dist/regex/state.js'
+import { SingleSymbol } from '@dist/regex/single-symbol.js'
 
 test('single-state-key', () => {
     const context = new Context()

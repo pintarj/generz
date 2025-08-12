@@ -1,4 +1,4 @@
-import { Declaration } from './ic/declaration'
+import { Declaration } from './ic/declaration.js'
 
 export interface OutputGeneratorInterface {
     generate(functions: ReadonlyArray<Declaration>): string

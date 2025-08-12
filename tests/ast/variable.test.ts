@@ -1,9 +1,9 @@
-import { Point, Location } from '@dist/source/location'
-import { Variable } from '@dist/ast/variable'
-import { Production } from '@dist/ast/production'
-import { TerminalUsage } from '@dist/ast/terminal-usage'
-import { State } from '@dist/regex/state'
-import { Terminal } from '@dist/ast/terminal'
+import { Point, Location } from '@dist/source/location.js'
+import { Variable } from '@dist/ast/variable.js'
+import { Production } from '@dist/ast/production.js'
+import { TerminalUsage } from '@dist/ast/terminal-usage.js'
+import { State } from '@dist/regex/state.js'
+import { Terminal } from '@dist/ast/terminal.js'
 
 const location = new Location(new Point(2, 4), new Point(3, 3))
 

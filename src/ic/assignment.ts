@@ -1,6 +1,6 @@
-import { Expression } from './expression'
-import { Statement, StatementConstructorOptions } from './statement'
-import { VariableReference } from './variable-reference'
+import { Expression } from './expression.js'
+import { Statement, StatementConstructorOptions } from './statement.js'
+import { VariableReference } from './variable-reference.js'
 
 export class Assignment extends Statement {
     public constructor(

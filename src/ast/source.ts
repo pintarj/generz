@@ -1,6 +1,6 @@
-import { Node } from './node'
-import { Location } from '../source/location'
-import { Declaration } from './declaration'
+import { Node } from './node.js'
+import { Location } from '../source/location.js'
+import { Declaration } from './declaration.js'
 
 export class Source extends Node {
     public constructor(

@@ -1,4 +1,4 @@
-import { Locatable } from './source/location'
+import { Locatable } from './source/location.js'
 
 export enum GenerzErrorType {
     ARGS,

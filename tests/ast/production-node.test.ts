@@ -1,5 +1,5 @@
-import { ProductionNode, ProductionNodeType } from '@dist/ast/production-node'
-import { Location, Point } from '@dist/source/location'
+import { ProductionNode, ProductionNodeType } from '@dist/ast/production-node.js'
+import { Location, Point } from '@dist/source/location.js'
 
 class TestProductionNode extends ProductionNode {
     public constructor() {

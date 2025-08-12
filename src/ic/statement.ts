@@ -1,4 +1,4 @@
-import { ICNode, ICNodeConstructorOptions, ICNodeType } from './ic-node'
+import { ICNode, ICNodeConstructorOptions, ICNodeType } from './ic-node.js'
 
 export interface StatementConstructorOptions extends ICNodeConstructorOptions {}
 

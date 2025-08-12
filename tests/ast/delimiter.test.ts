@@ -1,9 +1,9 @@
-import { Point, Location } from '@dist/source/location'
-import { RegularExpression } from '@dist/regular-expression'
-import { StringReader } from '@dist/reader'
-import { Context } from '@dist/regex/context'
-import { State } from '@dist/regex/state'
-import { Delimiter } from '@dist/ast/delimiter'
+import { Point, Location } from '@dist/source/location.js'
+import { RegularExpression } from '@dist/regular-expression.js'
+import { StringReader } from '@dist/reader.js'
+import { Context } from '@dist/regex/context.js'
+import { State } from '@dist/regex/state.js'
+import { Delimiter } from '@dist/ast/delimiter.js'
 
 function f(regex: string, options?: {context?: Context}): State {
     return (new RegularExpression(new StringReader(regex), options)).generate()

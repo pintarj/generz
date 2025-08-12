@@ -1,6 +1,6 @@
-import { ExpressionStatement } from './expression-statement'
-import { ICNode, ICNodeConstructorOptions, ICNodeType } from './ic-node'
-import { Statement } from './statement'
+import { ExpressionStatement } from './expression-statement.js'
+import { ICNode, ICNodeConstructorOptions, ICNodeType } from './ic-node.js'
+import { Statement } from './statement.js'
 
 export interface ExpressionConstructorOptions extends ICNodeConstructorOptions {}
 

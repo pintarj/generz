@@ -1,4 +1,4 @@
-import {Context} from '@dist/regex/context'
+import {Context} from '@dist/regex/context.js'
 
 test('context-empty', () => {
     const context = new Context()

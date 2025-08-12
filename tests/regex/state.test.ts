@@ -1,9 +1,9 @@
-import { State } from '@dist/regex/state'
-import { SingleSymbol } from '@dist/regex/single-symbol'
-import { MultiSymbol } from '@dist/regex/multi-symbol'
-import { Transition } from '@dist/regex/transition'
-import { Context } from '@dist/regex/context'
-import { IntegerInterval } from '@dist/utils/integer-intervals-set'
+import { State } from '@dist/regex/state.js'
+import { SingleSymbol } from '@dist/regex/single-symbol.js'
+import { MultiSymbol } from '@dist/regex/multi-symbol.js'
+import { Transition } from '@dist/regex/transition.js'
+import { Context } from '@dist/regex/context.js'
+import { IntegerInterval } from '@dist/utils/integer-intervals-set.js'
 
 test('empty', () => {
     const s = new State(0)

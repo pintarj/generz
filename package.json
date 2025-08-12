@@ -2,8 +2,9 @@
   "name": "generz",
   "version": "0.8.2",
   "description": "CLI program that generates code parts for compilers",
+  "type": "module",
   "engines": {
-    "node": ">=16"
+    "node": ">=22"
   },
   "main": "dist/main.js",
   "files": [
@@ -20,8 +21,7 @@
     "pretest": "npm run build",
     "postversion": "git push && git push --tags",
     "start": "node --enable-source-maps dist/main.js",
-    "test": "jest",
-    "ts-node": "ts-node"
+    "test": "node --experimental-vm-modules --disable-warning=ExperimentalWarning node_modules/jest/bin/jest.js"
   },
   "repository": {
     "type": "git",
@@ -40,17 +40,16 @@
   },
   "homepage": "https://github.com/pintarj/generz#readme",
   "devDependencies": {
-    "@types/jest": "^29.5.11",
-    "@types/node": "^16.18.70",
-    "dedent": "^1.5.1",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.17.1",
+    "dedent": "^1.6.0",
     "jest": "^29.7.0",
-    "rimraf": "^5.0.5",
-    "ts-jest": "^29.1.1",
+    "rimraf": "^6.0.1",
+    "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.9.2"
   },
   "dependencies": {
-    "chalk": "^4.1.2",
-    "yargs": "^17.7.2"
+    "yargs": "^18.0.0"
   }
 }

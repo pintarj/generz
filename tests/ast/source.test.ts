@@ -1,11 +1,11 @@
-import { Source } from '@dist/ast/source'
-import { Terminal } from '@dist/ast/terminal'
-import { Variable } from '@dist/ast/variable'
-import { StringReader } from '@dist/reader'
-import { Context } from '@dist/regex/context'
-import { State } from '@dist/regex/state'
-import { RegularExpression } from '@dist/regular-expression'
-import { Point, Location } from '@dist/source/location'
+import { Source } from '@dist/ast/source.js'
+import { Terminal } from '@dist/ast/terminal.js'
+import { Variable } from '@dist/ast/variable.js'
+import { StringReader } from '@dist/reader.js'
+import { Context } from '@dist/regex/context.js'
+import { State } from '@dist/regex/state.js'
+import { RegularExpression } from '@dist/regular-expression.js'
+import { Point, Location } from '@dist/source/location.js'
 
 function f(regex: string, options?: {context?: Context}): State {
     return (new RegularExpression(new StringReader(regex), options)).generate()

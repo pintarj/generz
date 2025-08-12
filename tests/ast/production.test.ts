@@ -1,11 +1,11 @@
-import { Production } from '@dist/ast/production'
-import { ProductionNode, ProductionNodeType } from '@dist/ast/production-node'
-import { Terminal } from '@dist/ast/terminal'
-import { TerminalUsage } from '@dist/ast/terminal-usage'
-import { Variable } from '@dist/ast/variable'
-import { VariableUsage } from '@dist/ast/variable-usage'
-import { State } from '@dist/regex/state'
-import { Location, Point } from '@dist/source/location'
+import { Production } from '@dist/ast/production.js'
+import { ProductionNode, ProductionNodeType } from '@dist/ast/production-node.js'
+import { Terminal } from '@dist/ast/terminal.js'
+import { TerminalUsage } from '@dist/ast/terminal-usage.js'
+import { Variable } from '@dist/ast/variable.js'
+import { VariableUsage } from '@dist/ast/variable-usage.js'
+import { State } from '@dist/regex/state.js'
+import { Location, Point } from '@dist/source/location.js'
 
 
 const location = new Location(new Point(2, 4), new Point(3, 3))

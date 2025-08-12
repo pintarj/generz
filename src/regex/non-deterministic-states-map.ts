@@ -1,6 +1,6 @@
-import {Context} from './context'
-import {State} from './state'
-import {InternalError} from '../error'
+import {Context} from './context.js'
+import {State} from './state.js'
+import {InternalError} from '../error.js'
 
 /**
  * Each state that is created by this class (and was not initially specified as initial-state)

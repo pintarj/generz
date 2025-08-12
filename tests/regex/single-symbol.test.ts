@@ -1,4 +1,4 @@
-import { SingleSymbol } from '@dist/regex/single-symbol'
+import { SingleSymbol } from '@dist/regex/single-symbol.js'
 
 test('constructor', () => {
     const c = 64

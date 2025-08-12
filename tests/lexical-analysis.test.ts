@@ -1,7 +1,7 @@
-import { SymbolType, parse } from '@dist/lexical-analysis'
-import { SourceReader } from '@dist/source/source-reader'
-import { StringReader } from '@dist/reader'
-import { Location, Point } from '@dist/source/location'
+import { SymbolType, parse } from '@dist/lexical-analysis.js'
+import { SourceReader } from '@dist/source/source-reader.js'
+import { StringReader } from '@dist/reader.js'
+import { Location, Point } from '@dist/source/location.js'
 
 test('parse-empty', () => {
     const source = ``

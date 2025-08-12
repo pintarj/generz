@@ -1,4 +1,4 @@
-import {IntegerInterval, IntegerIntervalsSet} from '@dist/utils/integer-intervals-set'
+import {IntegerInterval, IntegerIntervalsSet} from '@dist/utils/integer-intervals-set.js'
 
 describe('interval', () => {
     test('ok', () => {

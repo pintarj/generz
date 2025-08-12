@@ -1,7 +1,7 @@
-import { Point, Location } from '@dist/source/location'
-import { VariableUsage } from '@dist/ast/variable-usage'
-import { ProductionNodeType } from '@dist/ast/production-node'
-import { Variable } from '@dist/ast/variable'
+import { Point, Location } from '@dist/source/location.js'
+import { VariableUsage } from '@dist/ast/variable-usage.js'
+import { ProductionNodeType } from '@dist/ast/production-node.js'
+import { Variable } from '@dist/ast/variable.js'
 
 const location = new Location(new Point(2, 4), new Point(3, 3))
 

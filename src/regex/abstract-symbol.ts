@@ -1,4 +1,4 @@
-import { IntegerIntervalsSet } from '../utils/integer-intervals-set'
+import { IntegerIntervalsSet } from '../utils/integer-intervals-set.js'
 
 export type AbstractSymbolFragmentResult = {
     first_exclusive: AbstractSymbol,

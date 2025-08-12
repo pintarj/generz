@@ -1,5 +1,5 @@
-import { Expression } from './expression'
-import { Statement, StatementConstructorOptions } from './statement'
+import { Expression } from './expression.js'
+import { Statement, StatementConstructorOptions } from './statement.js'
 
 export interface IfConstructorOptions extends StatementConstructorOptions {
     else_body?: Statement|undefined

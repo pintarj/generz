@@ -1,7 +1,7 @@
-import { Point, Location } from '@dist/source/location'
-import { TerminalUsage } from '@dist/ast/terminal-usage'
-import { ProductionNodeType } from '@dist/ast/production-node'
-import { Terminal } from '@dist/ast/terminal'
+import { Point, Location } from '@dist/source/location.js'
+import { TerminalUsage } from '@dist/ast/terminal-usage.js'
+import { ProductionNodeType } from '@dist/ast/production-node.js'
+import { Terminal } from '@dist/ast/terminal.js'
 
 const location = new Location(new Point(2, 4), new Point(3, 3))
 

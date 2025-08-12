@@ -1,7 +1,7 @@
-import { Production } from './production'
-import { Location } from '../source/location'
-import { Declaration, DeclarationType } from './declaration'
-import { TerminalsMap } from '../semantic-analysis'
+import { Production } from './production.js'
+import { Location } from '../source/location.js'
+import { Declaration, DeclarationType } from './declaration.js'
+import { TerminalsMap } from '../semantic-analysis.js'
 
 export class Variable extends Declaration {
     public readonly productions: Production[]

@@ -1,5 +1,5 @@
-import { MultiSymbol } from '@dist/regex/multi-symbol'
-import { IntegerInterval } from '@dist/utils/integer-intervals-set'
+import { MultiSymbol } from '@dist/regex/multi-symbol.js'
+import { IntegerInterval } from '@dist/utils/integer-intervals-set.js'
 
 test('constructor', () => {
     const symbol = new MultiSymbol([

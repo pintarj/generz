@@ -1,6 +1,6 @@
-import { SourceReader } from './source/source-reader'
-import { Locatable, Location, Point } from './source/location'
-import { CodeError } from './error'
+import { SourceReader } from './source/source-reader.js'
+import { Locatable, Location, Point } from './source/location.js'
+import { CodeError } from './error.js'
 
 export enum SymbolType {
     IDENTIFIER,

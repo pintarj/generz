@@ -1,8 +1,8 @@
-import { Node } from './node'
-import { Location } from '../source/location'
-import { Variable } from './variable'
-import { Terminal } from './terminal'
-import { Delimiter } from './delimiter'
+import { Node } from './node.js'
+import { Location } from '../source/location.js'
+import { Variable } from './variable.js'
+import { Terminal } from './terminal.js'
+import { Delimiter } from './delimiter.js'
 
 export enum DeclarationType {
     TERMINAL = 'TERMINAL',

@@ -1,7 +1,7 @@
-import { ProductionNode, ProductionNodeType } from './production-node'
-import { Location } from '../source/location'
-import { Variable } from './variable'
-import { InternalError } from '../error'
+import { ProductionNode, ProductionNodeType } from './production-node.js'
+import { Location } from '../source/location.js'
+import { Variable } from './variable.js'
+import { InternalError } from '../error.js'
 
 export class VariableUsage extends ProductionNode {
     private _reference: Variable|undefined

@@ -1,11 +1,11 @@
-import { Node } from './node'
-import { ProductionNode, ProductionNodeType } from './production-node'
-import { Locatable, Location } from '../source/location'
-import { InternalError } from '../error'
-import { VariableUsage } from './variable-usage'
-import { TerminalUsage } from './terminal-usage'
-import { TerminalsMap } from '../semantic-analysis'
-import { Terminal } from './terminal'
+import { Node } from './node.js'
+import { ProductionNode, ProductionNodeType } from './production-node.js'
+import { Locatable, Location } from '../source/location.js'
+import { InternalError } from '../error.js'
+import { VariableUsage } from './variable-usage.js'
+import { TerminalUsage } from './terminal-usage.js'
+import { TerminalsMap } from '../semantic-analysis.js'
+import { Terminal } from './terminal.js'
 
 export class Production extends Node {
     private _terminals_maps: TerminalsMap[]|undefined

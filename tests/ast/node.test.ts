@@ -1,5 +1,5 @@
-import { Node } from '@dist/ast/node'
-import { Location, Point } from '@dist/source/location'
+import { Node } from '@dist/ast/node.js'
+import { Location, Point } from '@dist/source/location.js'
 
 class TestNode extends Node {
     public constructor() {

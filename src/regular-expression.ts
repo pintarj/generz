@@ -1,12 +1,12 @@
-import { Context } from './regex/context'
-import { SingleSymbol } from './regex/single-symbol'
-import { State } from './regex/state'
-import { CodeError } from './error'
-import { MultiSymbol } from './regex/multi-symbol'
-import { IntegerInterval } from './utils/integer-intervals-set'
-import { AbstractSymbol } from './regex/abstract-symbol'
-import { SourceReader } from './source/source-reader'
-import { Reader } from './reader'
+import { Context } from './regex/context.js'
+import { SingleSymbol } from './regex/single-symbol.js'
+import { State } from './regex/state.js'
+import { CodeError } from './error.js'
+import { MultiSymbol } from './regex/multi-symbol.js'
+import { IntegerInterval } from './utils/integer-intervals-set.js'
+import { AbstractSymbol } from './regex/abstract-symbol.js'
+import { SourceReader } from './source/source-reader.js'
+import { Reader } from './reader.js'
 
 type ParsingResult = {
     initial_state: State,

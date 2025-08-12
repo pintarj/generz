@@ -1,10 +1,10 @@
-import { RegularExpression } from '@dist/regular-expression'
-import { StringReader } from '@dist/reader'
-import { State } from '@dist/regex/state'
-import { Context } from '@dist/regex/context'
-import { CodeError } from '@dist/error'
-import { Point } from '@dist/source/location'
-import { SingleSymbol } from '@dist/regex/single-symbol'
+import { RegularExpression } from '@dist/regular-expression.js'
+import { StringReader } from '@dist/reader.js'
+import { State } from '@dist/regex/state.js'
+import { Context } from '@dist/regex/context.js'
+import { CodeError } from '@dist/error.js'
+import { Point } from '@dist/source/location.js'
+import { SingleSymbol } from '@dist/regex/single-symbol.js'
 
 function f(
     regex: string,

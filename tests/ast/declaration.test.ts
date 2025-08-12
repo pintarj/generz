@@ -1,8 +1,8 @@
-import { Point, Location } from '@dist/source/location'
-import { Declaration, DeclarationType } from '@dist/ast/declaration'
-import { Terminal } from '@dist/ast/terminal'
-import { Variable } from '@dist/ast/variable'
-import { Delimiter } from '@dist/ast/delimiter'
+import { Point, Location } from '@dist/source/location.js'
+import { Declaration, DeclarationType } from '@dist/ast/declaration.js'
+import { Terminal } from '@dist/ast/terminal.js'
+import { Variable } from '@dist/ast/variable.js'
+import { Delimiter } from '@dist/ast/delimiter.js'
 
 const location = new Location(new Point(2, 4), new Point(3, 3))
 

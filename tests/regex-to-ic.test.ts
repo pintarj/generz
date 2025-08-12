@@ -1,10 +1,10 @@
-import { IcExecutionMachine } from '@dist/ic-execution-machine'
-import { Atom } from '@dist/ic/atom'
-import { Statement } from '@dist/ic/statement'
-import { VariableDeclaration, VariableType } from '@dist/ic/variable-declaration'
-import { StringReader } from '@dist/reader'
-import { regex_to_ic } from '@dist/regex-to-ic'
-import { RegularExpression } from '@dist/regular-expression'
+import { IcExecutionMachine } from '@dist/ic-execution-machine.js'
+import { Atom } from '@dist/ic/atom.js'
+import { Statement } from '@dist/ic/statement.js'
+import { VariableDeclaration, VariableType } from '@dist/ic/variable-declaration.js'
+import { StringReader } from '@dist/reader.js'
+import { regex_to_ic } from '@dist/regex-to-ic.js'
+import { RegularExpression } from '@dist/regular-expression.js'
 
 interface RegexMachineExecutionResult {
     out: string|undefined

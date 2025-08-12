@@ -1,7 +1,7 @@
-import { ProductionNode, ProductionNodeType } from './production-node'
-import { Location } from '../source/location'
-import { Terminal } from './terminal'
-import { InternalError } from '../error'
+import { ProductionNode, ProductionNodeType } from './production-node.js'
+import { Location } from '../source/location.js'
+import { Terminal } from './terminal.js'
+import { InternalError } from '../error.js'
 
 export class TerminalUsage extends ProductionNode {
     private _reference: Terminal|undefined

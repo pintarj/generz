@@ -1,6 +1,6 @@
-import { InternalError } from '../error'
-import { Declaration } from '../ic/declaration'
-import { OutputGeneratorInterface } from '../output-generation'
+import { InternalError } from '../error.js'
+import { Declaration } from '../ic/declaration.js'
+import { OutputGeneratorInterface } from '../output-generation.js'
 
 export class CPlusPlusOutputGenerator implements OutputGeneratorInterface {
     generate(_functions: readonly Declaration[]): string {

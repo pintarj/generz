@@ -1,5 +1,5 @@
-import { AbstractSymbol } from './abstract-symbol'
-import { IntegerIntervalsSet } from '../utils/integer-intervals-set'
+import { AbstractSymbol } from './abstract-symbol.js'
+import { IntegerIntervalsSet } from '../utils/integer-intervals-set.js'
 
 export class SingleSymbol extends AbstractSymbol {
     public constructor(public readonly code_point: number) {

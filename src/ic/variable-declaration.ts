@@ -1,6 +1,6 @@
-import { Declaration, DeclarationConstructorOptions } from './declaration'
-import { Expression } from './expression'
-import { VariableReference } from './variable-reference'
+import { Declaration, DeclarationConstructorOptions } from './declaration.js'
+import { Expression } from './expression.js'
+import { VariableReference } from './variable-reference.js'
 
 export enum VariableType {
     VOID,

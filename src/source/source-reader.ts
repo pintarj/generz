@@ -1,5 +1,5 @@
-import { Reader } from '../reader'
-import { Point } from './location'
+import { Reader } from '../reader.js'
+import { Point } from './location.js'
 
 export class SourceReader implements Reader {
     public readonly file: string 

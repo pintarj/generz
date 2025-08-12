@@ -1,4 +1,4 @@
-import { Expression, ExpressionConstructorOptions } from './expression'
+import { Expression, ExpressionConstructorOptions } from './expression.js'
 
 export class Atom extends Expression {
     public constructor(

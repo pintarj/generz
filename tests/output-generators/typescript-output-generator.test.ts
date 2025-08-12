@@ -15,16 +15,16 @@ interface Executable {
 async function prepare_executable(code: string): Promise<Executable> {
     const tmp_dir = await fs.mkdtemp(path.join(os.tmpdir(), 'generz-tests-'))
     const gen_path = path.join(tmp_dir, 'gen.erz')
-    const out_path = path.join(tmp_dir, 'out.ts')
+    const out_path = path.join(tmp_dir, 'out.mts')
 
     await fs.writeFile(gen_path, code)
     await execp(`node ./dist/main.js -o ${out_path} ${gen_path}`)
 
-    const main_path = path.join(tmp_dir, 'main.ts')
+    const main_path = path.join(tmp_dir, 'main.mts')
 
     await fs.writeFile(main_path, dedent`
         import { readFileSync } from 'fs'
-        import { parse } from './out'
+        import { parse } from './out.mts'
         
         try {
             const input = readFileSync(process.stdin.fd, 'utf-8')

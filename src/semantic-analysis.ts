@@ -1,12 +1,12 @@
-import { DeclarationType } from './ast/declaration'
-import { Delimiter } from './ast/delimiter'
-import { ProductionNode, ProductionNodeType } from './ast/production-node'
-import { Source } from './ast/source'
-import { Terminal } from './ast/terminal'
-import { TerminalUsage } from './ast/terminal-usage'
-import { Variable } from './ast/variable'
-import { VariableUsage } from './ast/variable-usage'
-import { CodeError } from './error'
+import { DeclarationType } from './ast/declaration.js'
+import { Delimiter } from './ast/delimiter.js'
+import { ProductionNode, ProductionNodeType } from './ast/production-node.js'
+import { Source } from './ast/source.js'
+import { Terminal } from './ast/terminal.js'
+import { TerminalUsage } from './ast/terminal-usage.js'
+import { Variable } from './ast/variable.js'
+import { VariableUsage } from './ast/variable-usage.js'
+import { CodeError } from './error.js'
 
 export interface TerminalsMap {
     terminals: Terminal[]

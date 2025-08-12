@@ -1,5 +1,5 @@
-import { ArgsError, CodeError, InternalError } from '@dist/error'
-import { Point } from '@dist/source/location'
+import { ArgsError, CodeError, InternalError } from '@dist/error.js'
+import { Point } from '@dist/source/location.js'
 
 test('args', () => {
     const description = 'invalid argument'

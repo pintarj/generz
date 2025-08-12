@@ -1,7 +1,7 @@
-import { AbstractSymbol } from './abstract-symbol'
-import { Transition } from './transition'
-import { NonDeterministicStatesMap } from './non-deterministic-states-map'
-import { Context } from './context'
+import { AbstractSymbol } from './abstract-symbol.js'
+import { Transition } from './transition.js'
+import { NonDeterministicStatesMap } from './non-deterministic-states-map.js'
+import { Context } from './context.js'
 
 export class State {
     public readonly transitions: Transition[] = []

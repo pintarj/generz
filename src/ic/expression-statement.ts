@@ -1,5 +1,5 @@
-import { Expression } from './expression'
-import { Statement, StatementConstructorOptions } from './statement'
+import { Expression } from './expression.js'
+import { Statement, StatementConstructorOptions } from './statement.js'
 
 export class ExpressionStatement extends Statement {
     public constructor(

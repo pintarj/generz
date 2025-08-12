@@ -1,5 +1,5 @@
-import { Location } from '../source/location'
-import { Node } from './node'
+import { Location } from '../source/location.js'
+import { Node } from './node.js'
 
 export enum ProductionNodeType {
     TERMINAL_USAGE = 'TERMINAL_USAGE',

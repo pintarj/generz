@@ -1,4 +1,4 @@
-import { Point, Location, Locatable } from '@dist/source/location'
+import { Point, Location, Locatable } from '@dist/source/location.js'
 
 describe('point', () => {
     test('simple', () => {

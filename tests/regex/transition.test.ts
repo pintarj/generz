@@ -1,6 +1,6 @@
-import { SingleSymbol } from '@dist/regex/single-symbol'
-import { State } from '@dist/regex/state'
-import { Transition } from '@dist/regex/transition'
+import { SingleSymbol } from '@dist/regex/single-symbol.js'
+import { State } from '@dist/regex/state.js'
+import { Transition } from '@dist/regex/transition.js'
 
 test('transition-constructor', () => {
     const symbol = new SingleSymbol(32)

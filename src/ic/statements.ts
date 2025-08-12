@@ -1,4 +1,4 @@
-import { Statement, StatementConstructorOptions } from './statement'
+import { Statement, StatementConstructorOptions } from './statement.js'
 
 export class Statements extends Statement {
     public constructor(

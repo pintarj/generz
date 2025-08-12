@@ -1,5 +1,5 @@
-import { Expression, ExpressionConstructorOptions } from './expression'
-import { VariableDeclaration } from './variable-declaration'
+import { Expression, ExpressionConstructorOptions } from './expression.js'
+import { VariableDeclaration } from './variable-declaration.js'
 
 export class VariableReference extends Expression {
     public constructor(

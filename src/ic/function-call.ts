@@ -1,4 +1,4 @@
-import { Expression, ExpressionConstructorOptions } from './expression'
+import { Expression, ExpressionConstructorOptions } from './expression.js'
 
 export interface FunctionCallConstructorOptions extends ExpressionConstructorOptions {
     args?: Expression[]|undefined

@@ -1,4 +1,4 @@
-import { CodeBuilder } from '@dist/utils/code-builder'
+import { CodeBuilder } from '@dist/utils/code-builder.js'
 import dedent from 'dedent'
 
 test('empty', () => {

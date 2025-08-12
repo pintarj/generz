@@ -1,6 +1,6 @@
-import { StringReader } from '@dist/reader'
-import { Point } from '@dist/source/location'
-import { SourceReader } from '@dist/source/source-reader'
+import { StringReader } from '@dist/reader.js'
+import { Point } from '@dist/source/location.js'
+import { SourceReader } from '@dist/source/source-reader.js'
 
 test('file', () => {
     expect((new SourceReader(new StringReader(''))).file).toBe('<unknown>')

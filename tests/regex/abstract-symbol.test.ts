@@ -1,5 +1,5 @@
-import { AbstractSymbol } from '@dist/regex/abstract-symbol'
-import { SingleSymbol } from '@dist/regex/single-symbol'
+import { AbstractSymbol } from '@dist/regex/abstract-symbol.js'
+import { SingleSymbol } from '@dist/regex/single-symbol.js'
 
 test('constructor', () => {
     const c = 64

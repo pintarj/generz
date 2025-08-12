@@ -1,6 +1,6 @@
-import { DeclarationStatement } from './declaration-statement'
-import { ICNode, ICNodeConstructorOptions, ICNodeType } from './ic-node'
-import { Statement } from './statement'
+import { DeclarationStatement } from './declaration-statement.js'
+import { ICNode, ICNodeConstructorOptions, ICNodeType } from './ic-node.js'
+import { Statement } from './statement.js'
 
 export interface DeclarationConstructorOptions extends ICNodeConstructorOptions {}
 

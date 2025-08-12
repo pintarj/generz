@@ -1,4 +1,4 @@
-import {Reader, StringReader} from '@dist/reader'
+import {Reader, StringReader} from '@dist/reader.js'
 
 test('string-reader', () => {
     const reader: Reader = new StringReader('pikachu')
