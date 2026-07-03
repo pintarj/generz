@@ -254,3 +254,32 @@ describe('numexp', () => {
         expect(() => parser!.parse('5 + xyz')).toThrowError(/expected.+terminal.+number.+but found.+x/)
     })
 })
+
+describe('epsilon parser reset', () => {
+    let parser: VirtualParser|undefined
+
+    beforeAll(() => {
+        parser = new VirtualParser(f(dedent`
+            terminal a /a/
+            terminal b /b/
+            terminal c /c/
+
+            variable OptionalA {
+                production a
+                epsilon
+            }
+
+            variable X {
+                production b OptionalA c
+            }
+        `))
+    })
+
+    test('takes epsilon branch without consuming the following terminal', async () => {
+        expect(() => parser!.parse('bc')).not.toThrow()
+    })
+
+    test('still parses the explicit terminal branch', async () => {
+        expect(() => parser!.parse('bac')).not.toThrow()
+    })
+})

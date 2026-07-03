@@ -93,24 +93,31 @@ class ICGenerator {
                 regex_to_ic(machine, {parsed_terminal_id_ref})
             ]
 
+            let on_no_terminal_parsed_statement: Statement
+
             if (!epsilon) {
                 const error_message = (terminals.length === 1
                     ? `expected terminal \`${terminals[0].name}\`, `
                     : `expected one of terminals: ${terminals.map(x => `\`${x.name}\``).join(', ')}; `
                 ) + `but found "{}"`
-
-                const statement = new If(
-                    new BinaryOperation(Operator.EQUAL, parsed_terminal_id_ref, new Atom(-1)),
-                    (new FunctionCall('throw_error', {args: [
+                
+                on_no_terminal_parsed_statement = (new FunctionCall('throw_error', {
+                    args: [
                         new Atom(error_message),
                         new FunctionCall('read')
-                    ]})).to_statement()
-                )
-
-                statements.push(statement)
+                    ]
+                })).to_statement()
+            } else {
+                on_no_terminal_parsed_statement = (new FunctionCall('reset')).to_statement()
             }
 
-            statements.push(new Return(parsed_terminal_id_ref))
+            statements.push(
+                new If(
+                    new BinaryOperation(Operator.EQUAL, parsed_terminal_id_ref, new Atom(-1)),
+                    on_no_terminal_parsed_statement
+                ),
+                new Return(parsed_terminal_id_ref)
+            )
 
             f = new Function(name, [], VariableType.I32, new Statements(statements), {
                 comment: `Parses one of terminals: ${terminals_names.map(x => `\`${x}\``).join(', ')}.`
@@ -188,7 +195,9 @@ class ICGenerator {
                 new BinaryOperation(
                     Operator.EQUAL,
                     variable_terminal_id.get_reference(),
-                    new Atom(this.terminals_map.get(x.name)!.id)
+                    new Atom(this.terminals_map.get(x.name)!.id, {
+                        comment: x.name
+                    })
                 )
             ).reduce((left, right) =>
                 new BinaryOperation(
