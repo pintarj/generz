@@ -163,3 +163,41 @@ describe('numexp', () => {
         expect(await executable?.execute('5 + xyz')).toMatch(/expected.+terminal.+number.+but found.+x/)
     })
 })
+
+describe('epsilon parser reset', () => {
+    let executable: Executable|undefined
+
+    beforeAll(async () => {
+        executable = await prepare_executable(dedent`
+            terminal a /a/
+            terminal b /b/
+            terminal c /c/
+
+            variable OptionalA {
+                production a
+                epsilon
+            }
+
+            variable X {
+                production b OptionalA c
+            }
+        `)
+    })
+
+    afterAll(() => executable?.uninstall())
+
+    test('takes epsilon branch without consuming the following terminal', async () => {
+        expect(await executable?.execute('bc')).toBe('')
+    })
+
+    test('still parses the explicit terminal branch', async () => {
+        expect(await executable?.execute('bac')).toBe('')
+    })
+})
+
+test('generz-syntax', async () => {
+    const generz_syntax = await fs.readFile('syntax.erz', 'utf8')
+    const executable = await prepare_executable(generz_syntax)
+    expect(await executable.execute(generz_syntax)).toBe('')
+    await executable.uninstall()
+})

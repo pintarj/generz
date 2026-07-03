@@ -1,0 +1,44 @@
+delimiter /\s+/
+terminal id /[_a-zA-Z]+/
+terminal del /delimiter/
+terminal ter /terminal/
+terminal regex /\/([^\/]|\\\/)+\//
+terminal var /variable/
+terminal pro /production/
+terminal scope_start /\{/
+terminal scope_end /\}/
+terminal eps /epsilon/
+
+variable Node {
+    production id
+}
+
+variable NodesExt {
+    production Node NodesExt
+    epsilon
+}
+
+variable Nodes {
+    production Node NodesExt
+}
+
+variable VariableDeclaration {
+    production eps
+    production pro Nodes
+}
+
+variable VariableDeclarations {
+    production VariableDeclaration VariableDeclarations
+    epsilon
+}
+
+variable Declaration {
+    production del regex
+    production ter id regex
+    production var id scope_start VariableDeclarations scope_end
+}
+
+variable Root {
+    production Declaration Root
+    epsilon 
+}
